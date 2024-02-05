@@ -4,6 +4,37 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 });
 
+function showCustomPopup(content) {
+  const popupHtml = `
+    <div id="customPopup">
+      <h1>Dark Pattern Detected!</h1>
+      <p>${content}</p>
+    </div>
+  `;
+
+const popupContainer = document.createElement("div");
+  popupContainer.innerHTML = popupHtml;
+  document.body.appendChild(popupContainer);
+
+  popupContainer.style.position = "absolute";
+  popupContainer.style.bottom = "90%";
+  popupContainer.style.left = "77%";
+  // popupContainer.style.transform = "translateX(-50%)"; 
+  popupContainer.style.display = "flex";
+  // popupContainer.style.width = "100%";
+  popupContainer.style.backgroundColor = "black";
+  popupContainer.style.color = "white";
+  popupContainer.style.justifyContent = "center";
+  popupContainer.style.alignItems = "center";
+  popupContainer.style.height = "65px";
+  popupContainer.style.width = "22%";
+  popupContainer.style.borderRadius = "11px";
+
+  setTimeout(() => {
+    popupContainer.style.display = "none";
+  }, 3500);
+}
+
 function checkForFalseStock() {
   var labels = document.getElementsByTagName("span");
   var ps = document.getElementsByTagName("p");
@@ -20,7 +51,7 @@ function checkForFalseStock() {
     if (h.innerText.includes("left in stock")) {
       if (localStorage.getItem(window.location.href)) {
         if (localStorage.getItem(window.location.href) != h.innerText) {
-          alert("Amount of stocks changed on reload!");
+          showCustomPopup("Amount of stocks changed on reload!");
         }
       }
       localStorage.setItem(window.location.href, h.innerText);
@@ -46,7 +77,7 @@ function checkForSponsored() {
   for (var i = 0; i < concatenatedArray.length; i++) {
     var labelText = concatenatedArray[i].innerText.toLowerCase();
     if (labelText.includes("sponsored")) {
-      alert("Sponsored Content Detected!");
+      showCustomPopup("Sponsored Content Detected!");
       break;
     }
   }
@@ -74,8 +105,8 @@ function checkForSpecificLabel() {
     var labelText = labels[i].innerText.toLowerCase();
 
     if (labelText.includes("email or mobile phone number")) {
-      alert("Alert! Forced Account Creation Detected on Amazon");
-      return;
+      showCustomPopup("Alert! Forced Account Creation Detected on Amazon");
+        return;
     }
   }
 }
@@ -84,14 +115,14 @@ function detectMyntra() {
   var telInput = document.querySelector('input[type="tel"]');
   if (telInput) {
     alert("Alert! Forced Account Creation Detected on Myntra");
-  }
+    return;  }
 }
 
 function detectsnap() {
   var tInput = document.querySelector("input#username");
 
   if (tInput) {
-    alert("Alert! Forced Account Creation Detected on Snapdeal");
+    showCustomPopup("Alert! Forced Account Creation Detected on Snapdeal");
   }
 }
 
@@ -125,7 +156,7 @@ function detectBreach() {
     var labelText = concatenatedArray[i].innerText.toLowerCase();
     for(var j = 0; j < breachedWords.length; j++) {
       if(labelText.includes(breachedWords[j].toLowerCase())) {
-        alert("Potential Data Breach Detected!")
+        showCustomPopup("Potential Data Breach Detected!")
       }
     }
   }
