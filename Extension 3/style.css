@@ -403,6 +403,11 @@ body {
   color: white;
 }
 
+#Checkout {
+  margin-left: 1rem;
+  margin-top: 1.2rem;
+}
+
 #finalResults {
   margin-left: 1rem;
   margin-top: 1.2rem;
@@ -427,3 +432,13 @@ body {
   top: 0;
   left: 0;
 }
+
+.mainBtns {
+  display: flex;
+  height: 2.5rem;
+}
+
+#scanBtn1 {
+  width: 8rem;
+}
+

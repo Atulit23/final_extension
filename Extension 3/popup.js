@@ -59,7 +59,7 @@ function checkReviews() {
             all_responses["review_result"] = "No Reviews detected.";
           });
       }
-    } 
+    }
     // else if (url.includes("flipkart")) {
     //   alert('I am at flipkart')
     //   if (url.includes("product-reviews")) {
@@ -108,8 +108,7 @@ function checkReviews() {
     //         all_responses["review_result"] = "No Reviews detected.";
     //       });
     //   }
-    // } 
-    
+    // }
     else {
       all_responses["review_result"] = "";
     }
@@ -160,7 +159,7 @@ function checkScreen() {
                 return response.text();
               })
               .then((data) => {
-                alert(parseInt(data))
+                alert(parseInt(data));
                 if (parseInt(data) > 0) {
                   all_responses["image_result"] = "Deceptive UI detected.";
                 } else {
@@ -197,11 +196,87 @@ function checkScarcity() {
       })
       .then((data) => {
         console.log("API response:", data);
-        alert(data["data"])
+        alert(data["data"]);
         all_responses["scarcity_result"] = data["data"];
       })
-      .catch((error) => {
-      });
+      .catch((error) => {});
+  });
+}
+
+async function scanCheckout() {
+  const apiKey = "I4we027dKq9Ubl7nDmAalYEcIb3siVVC";
+
+  const requestOptions = {
+    method: "GET",
+    headers: {
+      apikey: apiKey,
+    },
+  };
+
+  const urlMain = "https://api.apilayer.com/image_to_text/url";
+
+  chrome.tabs.query({ active: true, currentWindow: true }).then((tabs) => {
+    chrome.runtime.sendMessage({ action: "capture" }, (response) => {
+      const img = new Image();
+      img.src = response.dataUrl;
+      img.onload = async () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+
+        const context = canvas.getContext("2d");
+        context.drawImage(img, 0, 0, img.width, img.height);
+
+        const link = document.createElement("a");
+        link.href = canvas.toDataURL("image/png");
+        link.download = "full-page-screenshot.png";
+
+        let url = canvas.toDataURL("image/png");
+        const blob = dataURItoBlob(url);
+        let file = new File([blob], Math.random().toString(), {
+          type: "image/png",
+        });
+
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_preset", "nb6tvi1b");
+
+        fetch("https://api.cloudinary.com/v1_1/ddvajyjou/image/upload", {
+          method: "POST",
+          body: formData,
+        })
+          .then(async (response) => {
+            const responseData = await response.json();
+            // alert(responseData.url);
+            try {
+              const response = await fetch(
+                `${urlMain}?url=${responseData.url}`,
+                requestOptions
+              );
+
+              if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+              }
+
+              const responseData1 = await response.json();
+
+              document.getElementById("loader").style.display = "none";
+              if(responseData1.all_text.toLowerCase().includes("additional") || responseData1.all_text.toLowerCase().includes("handling") || responseData1.all_text.toLowerCase().includes("platform") || responseData1.all_text.toLowerCase().includes("handling")) {
+                document.getElementById("Checkout").innerText = 'This website contains unexplained charges!';
+              } else {
+                document.getElementById("Checkout").innerText = 'No explained charges were found!';
+              }
+            } catch (error) {
+              console.error("Error:", error.message);
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
+
+        // link.click();
+      };
+    });
   });
 }
 
@@ -220,7 +295,8 @@ document.addEventListener("DOMContentLoaded", (event) => {
       if (Object.keys(all_responses).length >= 2) {
         //alert(all_responses["scarcity_result"]);
         document.getElementById("loader").style.display = "none";
-        document.getElementById("finalResults").innerText = "Results of the scan:";
+        document.getElementById("finalResults").innerText =
+          "Results of the scan:";
         // document.getElementById("Urgency").innerText =
         //   all_responses["scarcity_result"];
         document.getElementById("imageResult").innerText =
@@ -230,5 +306,13 @@ document.addEventListener("DOMContentLoaded", (event) => {
         clearInterval(interval);
       }
     }, 100);
+  });
+});
+
+document.addEventListener("DOMContentLoaded", (event) => {
+  document.getElementById("scanBtn1").addEventListener("click", () => {
+    document.getElementById("loader").style.display = "flex";
+    document.getElementById("Checkout").innerText = "";
+    scanCheckout();
   });
 });
