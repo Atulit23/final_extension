@@ -159,7 +159,7 @@ function checkScreen() {
                 return response.text();
               })
               .then((data) => {
-                alert(parseInt(data));
+                // alert(parseInt(data));
                 if (parseInt(data) > 0) {
                   all_responses["image_result"] = "Deceptive UI detected.";
                 } else {
@@ -314,5 +314,12 @@ document.addEventListener("DOMContentLoaded", (event) => {
     document.getElementById("loader").style.display = "flex";
     document.getElementById("Checkout").innerText = "";
     scanCheckout();
+  });
+});
+
+document.addEventListener("DOMContentLoaded", (event) => {
+  document.getElementById("feedback").addEventListener("click", () => {
+    document.getElementById("google_form").style.display = 'block'
+    document.getElementById("rest").style.display = 'none'
   });
 });

@@ -5,21 +5,22 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 function showCustomPopup(content) {
+  // alert('HaHa')
   const popupHtml = `
-    <div id="customPopup">
-      <h1>Dark Pattern Detected!</h1>
+    <div id="customPopup${Math.random()}">
+      <h1></h1>
       <p>${content}</p>
     </div>
   `;
 
-const popupContainer = document.createElement("div");
+  const popupContainer = document.createElement("div");
   popupContainer.innerHTML = popupHtml;
   document.body.appendChild(popupContainer);
 
   popupContainer.style.position = "absolute";
   popupContainer.style.bottom = "90%";
   popupContainer.style.left = "77%";
-  // popupContainer.style.transform = "translateX(-50%)"; 
+  // popupContainer.style.transform = "translateX(-50%)";
   popupContainer.style.display = "flex";
   // popupContainer.style.width = "100%";
   popupContainer.style.backgroundColor = "black";
@@ -28,7 +29,46 @@ const popupContainer = document.createElement("div");
   popupContainer.style.alignItems = "center";
   popupContainer.style.height = "65px";
   popupContainer.style.width = "22%";
-  popupContainer.style.borderRadius = "11px";
+  popupContainer.style.borderRadius = "0px";
+  popupContainer.style.padding = "0.5rem";
+
+  setTimeout(() => {
+    popupContainer.style.display = "none";
+  }, 3500);
+}
+
+function showCustomPopupForSponsored(content, doesExist) {
+  // alert('HaHa')
+  const popupHtml = `
+    <div id="customPopup${Math.random()}">
+      <h1></h1>
+      <p>${content}</p>
+    </div>
+  `;
+
+  const popupContainer = document.createElement("div");
+  popupContainer.innerHTML = popupHtml;
+  document.body.appendChild(popupContainer);
+
+  popupContainer.style.position = "absolute";
+  popupContainer.style.zIndex = "999";
+  if(doesExist) {
+    popupContainer.style.bottom = "80%";
+  } else {
+    popupContainer.style.bottom = "90%";
+  }
+  popupContainer.style.left = "77%";
+  // popupContainer.style.transform = "translateX(-50%)";
+  popupContainer.style.display = "flex";
+  // popupContainer.style.width = "100%";
+  popupContainer.style.backgroundColor = "black";  
+  popupContainer.style.color = "white";
+  popupContainer.style.justifyContent = "center";
+  popupContainer.style.alignItems = "center";
+  popupContainer.style.height = "65px";
+  popupContainer.style.width = "22%";
+  popupContainer.style.borderRadius = "0px";
+  popupContainer.style.padding = "0.5rem";
 
   setTimeout(() => {
     popupContainer.style.display = "none";
@@ -51,7 +91,7 @@ function checkForFalseStock() {
     if (h.innerText.includes("left in stock")) {
       if (localStorage.getItem(window.location.href)) {
         if (localStorage.getItem(window.location.href) != h.innerText) {
-          showCustomPopup("Amount of stocks changed on reload!");
+          showCustomPopupForSponsored("Amount of stocks changed on reload!");
         }
       }
       localStorage.setItem(window.location.href, h.innerText);
@@ -69,15 +109,15 @@ function checkForSponsored() {
   var psArray = Array.from(ps);
   var h2Array = Array.from(h2);
   var d2Array = Array.from(ds);
-
+  let doesExist = false
   var concatenatedArray = [...labelsArray, ...psArray, ...h2Array, ...d2Array];
-
-  console.log(concatenatedArray)
 
   for (var i = 0; i < concatenatedArray.length; i++) {
     var labelText = concatenatedArray[i].innerText.toLowerCase();
     if (labelText.includes("sponsored")) {
-      showCustomPopup("Sponsored Content Detected!");
+      // alert("Sponsored Content Detected!")
+      showCustomPopupForSponsored("Sponsored Content Detected!", doesExist);
+      doesExist = true
       break;
     }
   }
@@ -92,7 +132,8 @@ function checkForSponsored() {
       labelText.includes("also liked") ||
       labelText.includes("also like")
     ) {
-      alert("They are trying to get you to buy more products!");
+      // alert("They are trying to get you to buy more products!");
+      showCustomPopupForSponsored("They are trying to get you to buy more products!", doesExist);
       break;
     }
   }
@@ -106,7 +147,7 @@ function checkForSpecificLabel() {
 
     if (labelText.includes("email or mobile phone number")) {
       showCustomPopup("Alert! Forced Account Creation Detected on Amazon");
-        return;
+      return;
     }
   }
 }
@@ -114,8 +155,9 @@ function checkForSpecificLabel() {
 function detectMyntra() {
   var telInput = document.querySelector('input[type="tel"]');
   if (telInput) {
-    alert("Alert! Forced Account Creation Detected on Myntra");
-    return;  }
+    showCustomPopup("Alert! Forced Account Creation Detected on Myntra");
+    return;
+  }
 }
 
 function detectsnap() {
@@ -149,14 +191,14 @@ function detectBreach() {
     "Data Breaches",
     "Ignoring Information Requests",
     "Violating Regulations",
-    "antisocial", 
-    "nationalism"
-]
+    "antisocial",
+    "nationalism",
+  ];
   for (var i = 0; i < concatenatedArray.length; i++) {
     var labelText = concatenatedArray[i].innerText.toLowerCase();
-    for(var j = 0; j < breachedWords.length; j++) {
-      if(labelText.includes(breachedWords[j].toLowerCase())) {
-        showCustomPopup("Potential Data Breach Detected!")
+    for (var j = 0; j < breachedWords.length; j++) {
+      if (labelText.includes(breachedWords[j].toLowerCase())) {
+        showCustomPopupForSponsored("Potential Data Breach Detected!");
       }
     }
   }
