@@ -280,6 +280,8 @@ async function scanCheckout() {
   });
 }
 
+
+
 document.addEventListener("DOMContentLoaded", (event) => {
   document.getElementById("scanBtn").addEventListener("click", () => {
     document.getElementById("loader").style.display = "flex";
@@ -316,6 +318,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
     scanCheckout();
   });
 });
+
 
 document.addEventListener("DOMContentLoaded", (event) => {
   document.getElementById("feedback").addEventListener("click", () => {
