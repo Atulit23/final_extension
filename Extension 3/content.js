@@ -52,7 +52,7 @@ function showCustomPopupForSponsored(content, doesExist) {
 
   popupContainer.style.position = "absolute";
   popupContainer.style.zIndex = "999";
-  if(doesExist) {
+  if (doesExist) {
     popupContainer.style.bottom = "80%";
   } else {
     popupContainer.style.bottom = "90%";
@@ -61,7 +61,7 @@ function showCustomPopupForSponsored(content, doesExist) {
   // popupContainer.style.transform = "translateX(-50%)";
   popupContainer.style.display = "flex";
   // popupContainer.style.width = "100%";
-  popupContainer.style.backgroundColor = "black";  
+  popupContainer.style.backgroundColor = "black";
   popupContainer.style.color = "white";
   popupContainer.style.justifyContent = "center";
   popupContainer.style.alignItems = "center";
@@ -109,7 +109,7 @@ function checkForSponsored() {
   var psArray = Array.from(ps);
   var h2Array = Array.from(h2);
   var d2Array = Array.from(ds);
-  let doesExist = false
+  let doesExist = false;
   var concatenatedArray = [...labelsArray, ...psArray, ...h2Array, ...d2Array];
 
   for (var i = 0; i < concatenatedArray.length; i++) {
@@ -117,7 +117,7 @@ function checkForSponsored() {
     if (labelText.includes("sponsored")) {
       // alert("Sponsored Content Detected!")
       showCustomPopupForSponsored("Sponsored Content Detected!", doesExist);
-      doesExist = true
+      doesExist = true;
       break;
     }
   }
@@ -130,10 +130,14 @@ function checkForSponsored() {
       labelText.includes("item also viewed") ||
       labelText.includes("buy it with") ||
       labelText.includes("also liked") ||
-      labelText.includes("also like")
+      labelText.includes("also like") ||
+      labelText.includes("promoted")
     ) {
       // alert("They are trying to get you to buy more products!");
-      showCustomPopupForSponsored("They are trying to get you to buy more products!", doesExist);
+      showCustomPopupForSponsored(
+        "They are trying to get you to buy more products!",
+        doesExist
+      );
       break;
     }
   }
@@ -205,6 +209,7 @@ function detectBreach() {
   }
 }
 
+<<<<<<< HEAD
 // Naya Code yaha se hoga 
 
 // Detect ssl
@@ -416,6 +421,76 @@ function analyzePrivacyPolicy5() {
 
     });
 }
+=======
+// helper function for detectRandomMotherFucker
+function findMainParent(childId) {
+  let childElement = document.getElementById(childId);
+  let i = 0
+  if (childElement) {
+    let parentElement = childElement.parentNode;
+
+    while (parentElement && parentElement.parentNode) {
+      if(i <= 3) {
+        parentElement = parentElement;
+        i++;
+      }
+    }
+    console.log(parentElement, 'nigganinja')
+    return parentElement;
+  }
+
+  return null; 
+}
+
+const detectRandomMotherFucker = () => {
+  const uselessClasses = ["adsbygoogle", "GoogleAdViewElement"];
+  const uselessIds = ["google"];
+
+  let classesWithGoogle = [];
+  let idsWithGoogle = [];
+
+  var allElements = document.querySelectorAll("*");
+
+  allElements.forEach(function (element) {
+    var classNames = element.classList;
+    if (classNames.length > 0) {
+      var classListArray = Array.from(classNames);
+      var classListString = classListArray.join(" ");
+
+      if (classListString.toLowerCase().includes("google")) {
+        classesWithGoogle.push(classListString);
+      }
+    }
+    var idName = element.id;
+    if (idName.toLowerCase().includes("google")) {
+      idsWithGoogle.push(idName);
+    }
+  });
+
+  idsWithGoogle.map((item) => {
+    if (document.getElementById(item).clientHeight && document.getElementById(item).clientHeight > 10) {
+      document.getElementById(item).style.border = "10px solid black";
+    }
+  });
+
+  classesWithGoogle.forEach((item) => {
+    let items = document.getElementsByClassName(item);
+    let itemsArray = Array.from(items);
+
+    for(let i = 0; i < itemsArray.length; i++) {
+      if(itemsArray[i].clientHeight) {
+        console.log(itemsArray[i].firstElementChild.getAttribute('data-ad-status'))
+        if (itemsArray[i].firstElementChild.getAttribute('data-ad-status') != 'unfilled') {
+          console.log(window.screenTop)
+          itemsArray[i].style.padding = "30px";
+          itemsArray[i].style.border = "10px solid black";
+          // break;
+        }
+      }
+    }
+  });
+};
+>>>>>>> caa2f0d67f24cc2511643a46f5fa0bce1347b09c
 
 window.addEventListener("load", detectsnap);
 window.addEventListener("load", detectMyntra);
@@ -423,6 +498,7 @@ window.addEventListener("load", checkForSpecificLabel);
 window.addEventListener("load", checkForFalseStock);
 window.addEventListener("load", checkForSponsored);
 window.addEventListener("load", detectBreach);
+<<<<<<< HEAD
 window.addEventListener("load", detecthttps);
 window.addEventListener("load" , checkCookies);
 window.addEventListener("load" , analyzePrivacyPolicy1);
@@ -430,3 +506,17 @@ window.addEventListener("load" , analyzePrivacyPolicy2);
 window.addEventListener("load" , analyzePrivacyPolicy3);
 window.addEventListener("load" , analyzePrivacyPolicy4);
 window.addEventListener("load" , analyzePrivacyPolicy5);
+=======
+
+window.onload = () => {
+  let count = 0;
+  let init = setInterval(() => {
+    detectRandomMotherFucker();
+    count += 1;
+    if (count >= 30) {
+      clearInterval(init);
+      alert("Init Terminated");
+    }
+  }, 1000);
+};
+>>>>>>> caa2f0d67f24cc2511643a46f5fa0bce1347b09c
