@@ -259,12 +259,33 @@ async function scanCheckout() {
               }
 
               const responseData1 = await response.json();
+              console.log(responseData1.all_text);
+              const blob = new Blob([responseData1.all_text], { type: 'text/plain' });
 
+              const link = document.createElement('a');
+            
+              link.href = URL.createObjectURL(blob);
+              link.download = 'example.txt';
+            
+              document.body.appendChild(link);
+            
+              link.click();
+            
+              document.body.removeChild(link);
+
+              alert(JSON.stringify(responseData1.all_text));
               document.getElementById("loader").style.display = "none";
-              if(responseData1.all_text.toLowerCase().includes("additional") || responseData1.all_text.toLowerCase().includes("handling") || responseData1.all_text.toLowerCase().includes("platform") || responseData1.all_text.toLowerCase().includes("handling")) {
-                document.getElementById("Checkout").innerText = 'This website contains unexplained charges!';
+              if (
+                responseData1.all_text.toLowerCase().includes("additional") ||
+                responseData1.all_text.toLowerCase().includes("handling") ||
+                responseData1.all_text.toLowerCase().includes("platform") ||
+                responseData1.all_text.toLowerCase().includes("other services")
+              ) {
+                document.getElementById("Checkout").innerText =
+                  "This website contains unexplained charges!";
               } else {
-                document.getElementById("Checkout").innerText = 'No explained charges were found!';
+                document.getElementById("Checkout").innerText =
+                  "No explained charges were found!";
               }
             } catch (error) {
               console.error("Error:", error.message);
@@ -280,13 +301,10 @@ async function scanCheckout() {
   });
 }
 
-
-
 document.addEventListener("DOMContentLoaded", (event) => {
   document.getElementById("scanBtn").addEventListener("click", () => {
     document.getElementById("loader").style.display = "flex";
     all_responses = {};
-    // document.getElementById("Urgency").innerText = "";
     document.getElementById("imageResult").innerText = "";
     document.getElementById("reviewResult").innerText = "";
     document.getElementById("finalResults").innerText = "";
@@ -295,12 +313,9 @@ document.addEventListener("DOMContentLoaded", (event) => {
     // checkScarcity();
     let interval = setInterval(() => {
       if (Object.keys(all_responses).length >= 2) {
-        //alert(all_responses["scarcity_result"]);
         document.getElementById("loader").style.display = "none";
         document.getElementById("finalResults").innerText =
           "Results of the scan:";
-        // document.getElementById("Urgency").innerText =
-        //   all_responses["scarcity_result"];
         document.getElementById("imageResult").innerText =
           all_responses["image_result"];
         document.getElementById("reviewResult").innerText =
@@ -319,10 +334,9 @@ document.addEventListener("DOMContentLoaded", (event) => {
   });
 });
 
-
 document.addEventListener("DOMContentLoaded", (event) => {
   document.getElementById("feedback").addEventListener("click", () => {
-    document.getElementById("google_form").style.display = 'block'
-    document.getElementById("rest").style.display = 'none'
+    document.getElementById("google_form").style.display = "block";
+    document.getElementById("rest").style.display = "none";
   });
 });
