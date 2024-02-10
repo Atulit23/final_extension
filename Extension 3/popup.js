@@ -1,342 +1,1072 @@
-var all_responses = {};
-
-function dataURItoBlob(dataURI) {
-  var binary = atob(dataURI.split(",")[1]);
-  var array = [];
-  for (var i = 0; i < binary.length; i++) {
-    array.push(binary.charCodeAt(i));
-  }
-  return new Blob([new Uint8Array(array)], { type: "image/png" });
-}
-
-function checkReviews() {
-  chrome.tabs.query({ active: true, currentWindow: true }).then((tabs) => {
-    var url = tabs[0].url;
-    console.log(url);
-    if (url.includes("amazon")) {
-      if (url.includes("product-review")) {
-        let api_url = `https://review-and-ads.vercel.app/review-prediction?url=${url}`;
-
-        fetch(api_url)
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            return response.json();
-          })
-          .then((data) => {
-            console.log("API response:", data);
-            if (data > 0) {
-              all_responses["review_result"] = "Deceptive Reviews detected.";
-            } else {
-              all_responses["review_result"] = "No deceptive Reviews detected.";
-            }
-          })
-          .catch((error) => {
-            all_responses["review_result"] = "No Reviews detected..";
-          });
-      } else {
-        let url_ = url.split("/dp/");
-        let newUrl = url_[0] + "/product-review/" + url_[1];
-        let api_url_ = `https://review-and-ads.vercel.app/review-prediction?url=${newUrl}`;
-
-        fetch(api_url_)
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            return response.text();
-          })
-          .then((data) => {
-            console.log("API response:", data);
-            if (parseInt(data[0]) > 0) {
-              all_responses["review_result"] = "Deceptive Reviews detected.";
-            } else {
-              all_responses["review_result"] = "No deceptive Reviews detected.";
-            }
-          })
-          .catch((error) => {
-            all_responses["review_result"] = "No Reviews detected.";
-          });
-      }
-    }
-    // else if (url.includes("flipkart")) {
-    //   alert('I am at flipkart')
-    //   if (url.includes("product-reviews")) {
-    //     let api_url = `https://review-and-ads.vercel.app/review-prediction?url=${url}`;
-    //     alert(api_url)
-
-    //     fetch(api_url)
-    //       .then((response) => {
-    //         if (!response.ok) {
-    //           throw new Error(`HTTP error! Status: ${response.status}`);
-    //         }
-    //         return response.json();
-    //       })
-    //       .then((data) => {
-    //         console.log("API response:", data);
-    //         if (data > 0) {
-    //           all_responses["review_result"] = "Deceptive Reviews detected.";
-    //         } else {
-    //           all_responses["review_result"] = "No deceptive Reviews detected.";
-    //         }
-    //       })
-    //       .catch((error) => {
-    //         all_responses["review_result"] = "No Reviews detected.";
-    //       });
-    //   } else {
-    //     let url_ = url.split("/p/");
-    //     let newUrl = url_[0] + "/product-reviews/" + url_[1];
-    //     let api_url_ = `https://review-and-ads.vercel.app/review-prediction?url=${newUrl}`;
-    //     alert(api_url_)
-    //     fetch(api_url_)
-    //       .then((response) => {
-    //         if (!response.ok) {
-    //           throw new Error(`HTTP error! Status: ${response.status}`);
-    //         }
-    //         return response.text();
-    //       })
-    //       .then((data) => {
-    //         console.log("API response:", data);
-    //         if (parseInt(data[0]) > 0) {
-    //           all_responses["review_result"] = "Deceptive Reviews detected.";
-    //         } else {
-    //           all_responses["review_result"] = "No deceptive Reviews detected.";
-    //         }
-    //       })
-    //       .catch((error) => {
-    //         all_responses["review_result"] = "No Reviews detected.";
-    //       });
-    //   }
-    // }
-    else {
-      all_responses["review_result"] = "";
-    }
-  });
-}
-
-function checkScreen() {
-  chrome.tabs.query({ active: true, currentWindow: true }).then((tabs) => {
-    chrome.runtime.sendMessage({ action: "capture" }, (response) => {
-      const img = new Image();
-      img.src = response.dataUrl;
-      img.onload = async () => {
-        const canvas = document.createElement("canvas");
-        canvas.width = img.width;
-        canvas.height = img.height;
-
-        const context = canvas.getContext("2d");
-        context.drawImage(img, 0, 0, img.width, img.height);
-
-        const link = document.createElement("a");
-        link.href = canvas.toDataURL("image/png");
-        link.download = "full-page-screenshot.png";
-
-        let url = canvas.toDataURL("image/png");
-        const blob = dataURItoBlob(url);
-        let file = new File([blob], Math.random().toString(), {
-          type: "image/png",
-        });
-
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("upload_preset", "nb6tvi1b");
-
-        fetch("https://api.cloudinary.com/v1_1/ddvajyjou/image/upload", {
-          method: "POST",
-          body: formData,
-        })
-          .then(async (response) => {
-            const responseData = await response.json();
-            console.log(responseData.url);
-            let url = `https://review-and-ads.vercel.app/image-prediction?url=${responseData.url}`;
-            alert(url);
-            fetch(url)
-              .then((response) => {
-                if (!response.ok) {
-                  throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                return response.text();
-              })
-              .then((data) => {
-                // alert(parseInt(data));
-                if (parseInt(data) > 0) {
-                  all_responses["image_result"] = "Deceptive UI detected.";
-                } else {
-                  all_responses["image_result"] =
-                    "No deception in UI detected.";
-                }
-              })
-              .catch((error) => {
-                document.getElementById("imageResult").innerText = error;
-                console.log("Error fetching data:", error);
-              });
-          })
-          .catch((error) => {
-            console.error("Error:", error);
-          });
-
-        // link.click();
-      };
-    });
-  });
-}
-
-function checkScarcity() {
-  chrome.tabs.query({ active: true, currentWindow: true }).then((tabs) => {
-    var url = tabs[0].url;
-    const baseUrl = `https://scarcity-beta.vercel.app/?url=${url}`;
-    alert(baseUrl);
-    fetch(baseUrl)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((data) => {
-        console.log("API response:", data);
-        alert(data["data"]);
-        all_responses["scarcity_result"] = data["data"];
-      })
-      .catch((error) => {});
-  });
-}
-
-async function scanCheckout() {
-  const apiKey = "I4we027dKq9Ubl7nDmAalYEcIb3siVVC";
-
-  const requestOptions = {
-    method: "GET",
-    headers: {
-      apikey: apiKey,
-    },
-  };
-
-  const urlMain = "https://api.apilayer.com/image_to_text/url";
-
-  chrome.tabs.query({ active: true, currentWindow: true }).then((tabs) => {
-    chrome.runtime.sendMessage({ action: "capture" }, (response) => {
-      const img = new Image();
-      img.src = response.dataUrl;
-      img.onload = async () => {
-        const canvas = document.createElement("canvas");
-        canvas.width = img.width;
-        canvas.height = img.height;
-
-        const context = canvas.getContext("2d");
-        context.drawImage(img, 0, 0, img.width, img.height);
-
-        const link = document.createElement("a");
-        link.href = canvas.toDataURL("image/png");
-        link.download = "full-page-screenshot.png";
-
-        let url = canvas.toDataURL("image/png");
-        const blob = dataURItoBlob(url);
-        let file = new File([blob], Math.random().toString(), {
-          type: "image/png",
-        });
-
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("upload_preset", "nb6tvi1b");
-
-        fetch("https://api.cloudinary.com/v1_1/ddvajyjou/image/upload", {
-          method: "POST",
-          body: formData,
-        })
-          .then(async (response) => {
-            const responseData = await response.json();
-            // alert(responseData.url);
-            try {
-              const response = await fetch(
-                `${urlMain}?url=${responseData.url}`,
-                requestOptions
-              );
-
-              if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-              }
-
-              const responseData1 = await response.json();
-              console.log(responseData1.all_text);
-              const blob = new Blob([responseData1.all_text], { type: 'text/plain' });
-
-              const link = document.createElement('a');
-            
-              link.href = URL.createObjectURL(blob);
-              link.download = 'example.txt';
-            
-              document.body.appendChild(link);
-            
-              link.click();
-            
-              document.body.removeChild(link);
-
-              alert(JSON.stringify(responseData1.all_text));
-              document.getElementById("loader").style.display = "none";
-              if (
-                responseData1.all_text.toLowerCase().includes("additional") ||
-                responseData1.all_text.toLowerCase().includes("handling") ||
-                responseData1.all_text.toLowerCase().includes("platform") ||
-                responseData1.all_text.toLowerCase().includes("other services")
-              ) {
-                document.getElementById("Checkout").innerText =
-                  "This website contains unexplained charges!";
-              } else {
-                document.getElementById("Checkout").innerText =
-                  "No explained charges were found!";
-              }
-            } catch (error) {
-              console.error("Error:", error.message);
-            }
-          })
-          .catch((error) => {
-            console.error("Error:", error);
-          });
-
-        // link.click();
-      };
-    });
-  });
-}
-
-document.addEventListener("DOMContentLoaded", (event) => {
-  document.getElementById("scanBtn").addEventListener("click", () => {
-    document.getElementById("loader").style.display = "flex";
-    all_responses = {};
-    document.getElementById("imageResult").innerText = "";
-    document.getElementById("reviewResult").innerText = "";
-    document.getElementById("finalResults").innerText = "";
-    checkScreen();
-    checkReviews();
-    // checkScarcity();
-    let interval = setInterval(() => {
-      if (Object.keys(all_responses).length >= 2) {
-        document.getElementById("loader").style.display = "none";
-        document.getElementById("finalResults").innerText =
-          "Results of the scan:";
-        document.getElementById("imageResult").innerText =
-          all_responses["image_result"];
-        document.getElementById("reviewResult").innerText =
-          all_responses["review_result"];
-        clearInterval(interval);
-      }
-    }, 100);
-  });
-});
-
-document.addEventListener("DOMContentLoaded", (event) => {
-  document.getElementById("scanBtn1").addEventListener("click", () => {
-    document.getElementById("loader").style.display = "flex";
-    document.getElementById("Checkout").innerText = "";
-    scanCheckout();
-  });
-});
-
 document.addEventListener("DOMContentLoaded", (event) => {
   document.getElementById("feedback").addEventListener("click", () => {
     document.getElementById("google_form").style.display = "block";
     document.getElementById("rest").style.display = "none";
   });
 });
+
+let current = 0
+let current1 = 0
+
+let spon_current_0 = 0
+let spon_current_1 = 0
+
+let more_0 = 0
+let more_1 = 0
+
+window.onload = () => {
+
+  // setInterval(() => {
+    let obj = {};
+    let previousKeys = [];
+    let shouldDelete = false;
+
+    chrome.runtime.onMessage.addListener(function (
+      request,
+      sender,
+      sendResponse
+    ) {
+      handleMessage(request);
+    });
+
+    function handleMessage(request) {
+      if (request.message === "updateResults") {
+        const newKeys = Object.keys(request.allResults);
+
+        if (!arraysAreEqual(previousKeys, newKeys)) {
+          obj = request.allResults;
+          shouldDelete = request.shouldDelete;
+          createDivElements();
+          previousKeys = newKeys;
+        }
+      }
+    }
+
+    function createDivElements() {
+      var parentElement = document.getElementById("parent");
+
+      chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+        var currentTabUrl = tabs[0].url;
+        if (obj["current_url"] == tabs[0].url) {
+          Object.keys(obj)?.map((item, index) => {
+            console.log(obj);
+            if (!document.getElementById(item + index.toString())) {
+              var newDiv = document.createElement("div");
+              newDiv.id = item + index.toString();
+              newDiv.className = "someRandomThings"
+              newDiv.style.color = "white";
+              newDiv.style.fontSize = "1rem";
+              newDiv.style.margin = "1rem";
+
+              parentElement.appendChild(newDiv);
+
+              if (item == "stock_data") {
+                newDiv.innerHTML = "Stock Data" + `<br>${Object.values(obj)[index]}</br>`
+              } 
+              if (item == "amazon_policy") {
+                newDiv.innerHTML = "Transparency Check" + `<br>${Object.values(obj)[index]}</br>`
+              } 
+              // else if (item == "countdown_data") {
+              //   document.getElementById(item + index.toString()).innerHTML = "Regarding Countdown" + `<br>${Object.values(obj)[index]}</br>`;
+              // } 
+              else if (item == "sponsored_content") {
+                newDiv.innerHTML = `<img src="images/prev.png" id="sponsored_prev" />` + " " +  "Sponsored Content" + " (" + Object.values(obj)[index].length.toString() + ")" + " " + `<img src="images/next.png" id="sponsored_next" />`;
+                let next = document.getElementById("sponsored_next");
+                let previous = document.getElementById("sponsored_prev");
+                
+
+                next.onclick = () => {
+                  let obj_arr = Object.values(obj)[index];
+                  let classValues = {};
+                  if (obj_arr[current].type == "class") {
+                    if (classValues[obj_arr[current].class]) {
+                      classValues[obj_arr[current].class] =
+                        classValues[obj_arr[current].class] + 1;
+                    } else {
+                      classValues[obj_arr[current].class] = 1;
+                    }
+                    console.log(classValues);
+                    chrome.tabs.query(
+                      { active: true, currentWindow: true },
+                      function (tabs) {
+                        var message = {
+                          action: "scrollFromClass",
+                          className: obj_arr[current].class,
+                          index: classValues[obj_arr[current].class]
+                            ? classValues[obj_arr[current].class]
+                            : 0,
+                        };
+                        chrome.tabs.sendMessage(tabs[0].id, message);
+                      }
+                    );
+                  } else {
+                    // console.log(obj_arr)
+                    // console.log(obj_arr[current])
+                    // alert(JSON.stringify(obj_arr[current]))
+                    chrome.tabs.query(
+                      { active: true, currentWindow: true },
+                      function (tabs) {
+                        var message = {
+                          action: "scrollToElement",
+                          elementId: obj_arr[spon_current_0].id,
+                        };
+                        chrome.tabs.sendMessage(tabs[0].id, message);
+                      }
+                    );
+                  }
+                  if (spon_current_0 < Object.values(obj)[index].length) {
+                    spon_current_0 += 1;
+                  }
+                };
+
+                previous.onclick = () => {
+                  let obj_arr = Object.values(obj)[index];
+                  let classValues = {};
+                  if (obj_arr[current].type == "class") {
+                    if (classValues[obj_arr[current].class]) {
+                      classValues[obj_arr[current].class] =
+                        classValues[obj_arr[current].class] + 1;
+                    } else {
+                      classValues[obj_arr[current].class] = 1;
+                    }
+                    console.log(classValues);
+                    chrome.tabs.query(
+                      { active: true, currentWindow: true },
+                      function (tabs) {
+                        var message = {
+                          action: "scrollFromClass",
+                          className: obj_arr[current].class,
+                          index: classValues[obj_arr[current].class]
+                            ? classValues[obj_arr[current].class]
+                            : 0,
+                        };
+                        chrome.tabs.sendMessage(tabs[0].id, message);
+                      }
+                    );
+                  } else {
+                    chrome.tabs.query(
+                      { active: true, currentWindow: true },
+                      function (tabs) {
+                        var message = {
+                          action: "scrollToElement",
+                          elementId: obj_arr[spon_current_0].id,
+                        };
+                        chrome.tabs.sendMessage(tabs[0].id, message);
+                      }
+                    );
+                  }
+                  if (spon_current_0 > 0) {
+                    spon_current_0 -= 1;
+                  }
+                };
+              } else if (item == "more_prods") {
+                newDiv.innerHTML = `<img src="images/prev.png" id="sponsored_prev1" />` + " " +  "Force Buy" + " (" + Object.values(obj)[index].length.toString() + ")" + " " + `<img src="images/next.png" id="sponsored_next1" />`;
+                let next = document.getElementById("sponsored_next1");
+                let previous = document.getElementById("sponsored_prev1");
+                // next.id = "sponsored_next1";
+                // next.textContent = "Next";
+                // previous.id = "sponsored_prev1";
+                // previous.textContent = "Previous";
+                // let current = 0;
+
+                next.onclick = () => {
+                  let obj_arr = Object.values(obj)[index];
+                  let classValues = {};
+                  if (obj_arr[current].type == "class") {
+                    // alert(obj_arr[current].class)
+                    if (classValues[obj_arr[current].class]) {
+                      classValues[obj_arr[current].class] =
+                        classValues[obj_arr[current].class] + 1;
+                    } else {
+                      classValues[obj_arr[current].class] = 1;
+                    }
+                    console.log(classValues);
+                    chrome.tabs.query(
+                      { active: true, currentWindow: true },
+                      function (tabs) {
+                        var message = {
+                          action: "scrollFromClass",
+                          className: obj_arr[current].class,
+                          index: classValues[obj_arr[current].class]
+                            ? classValues[obj_arr[current].class]
+                            : 0,
+                        };
+                        chrome.tabs.sendMessage(tabs[0].id, message);
+                      }
+                    );
+                  } else {
+                    // alert(JSON.stringify(obj_arr))
+                    // alert(JSON.stringify(obj_arr[current]))
+                    // alert(JSON.stringify(obj_arr[current].id))
+                    // alert(current)
+                    chrome.tabs.query(
+                      { active: true, currentWindow: true },
+                      function (tabs) {
+                        var message = {
+                          action: "scrollToElement_",
+                          elementId_: obj_arr[more_0].id,
+                        };
+
+                        chrome.tabs.sendMessage(tabs[0].id, message);
+                      }
+                    );
+                  }
+                  if (more_0 < Object.values(obj)[index].length) {
+                    more_0 += 1;
+                  }
+                };
+
+                previous.onclick = () => {
+                  let obj_arr = Object.values(obj)[index];
+                  let classValues = {};
+                  if (obj_arr[current].type == "class") {
+                    // alert(obj_arr[current].class)
+                    if (classValues[obj_arr[current].class]) {
+                      classValues[obj_arr[current].class] =
+                        classValues[obj_arr[current].class] + 1;
+                    } else {
+                      classValues[obj_arr[current].class] = 1;
+                    }
+                    console.log(classValues);
+                    chrome.tabs.query(
+                      { active: true, currentWindow: true },
+                      function (tabs) {
+                        var message = {
+                          action: "scrollFromClass",
+                          className: obj_arr[current].class,
+                          index: classValues[obj_arr[current].class]
+                            ? classValues[obj_arr[current].class]
+                            : 0,
+                        };
+                        chrome.tabs.sendMessage(tabs[0].id, message);
+                      }
+                    );
+                  } else {
+                    chrome.tabs.query(
+                      { active: true, currentWindow: true },
+                      function (tabs) {
+                        var message = {
+                          action: "scrollToElement_",
+                          elementId_: obj_arr[more_0].id,
+                        };
+                        chrome.tabs.sendMessage(tabs[0].id, message);
+                      }
+                    );
+                  }
+                  if (more_0 > 0) {
+                    more_0 -= 1;
+                  }
+                };
+              
+              } else if (item == "protocol") {
+                newDiv.innerHTML = "Protocol: " + `<br>${Object.values(obj)[index]}</br>`
+              } else if (item == "cookies") {
+                newDiv.innerHTML = "Cookies: " + `<br>${Object.values(obj)[index]}</br>`
+              } else if (item == "ads_with_ids") {
+                if(!document.getElementById("ads_next") &&
+                !document.getElementById("ads_previous")) {
+
+                  newDiv.innerHTML = `<img src="images/prev.png" id="ads_previous" />` + " " +  "UI Deception" + " (" + Object.values(obj)[index].length.toString() + ")" + " " + `<img src="images/next.png" id="ads_next" />`;
+                }
+                  if (
+                    !document.getElementById("ads_next") &&
+                    !document.getElementById("ads_previous")
+                  ) {
+                    // let next = document.createElement("div");
+                    // let previous = document.createElement("div");
+  
+                    // next.id = "ads_next";
+                    // next.textContent = "Next";
+                    // previous.id = "ads_previous";
+                    // previous.textContent = "Previous";
+                    // let current = 0;
+  
+                    // next.onclick = () => {
+                    //   //alert('FUCKKKKKKKKKK')
+                    //   chrome.tabs.query(
+                    //     { active: true, currentWindow: true },
+                    //     function (tabs) {
+                    //       var message = {
+                    //         action: "scrollTheFuckingAds",
+                    //         elementId_: Object.values(obj)[index][current],
+                    //       };
+                    //       chrome.tabs.sendMessage(tabs[0].id, message);
+                    //     }
+                    //   );
+                    //   if(current < Object.values(obj)[index].length) {
+                    //     current += 1
+                    //   }
+                    // };
+  
+                    // previous.onclick = () => {
+                    //   chrome.tabs.query(
+                    //     { active: true, currentWindow: true },
+                    //     function (tabs) {
+                    //       var message = {
+                    //         action: "scrollTheFuckingAds",
+                    //         elementId_: Object.values(obj)[index][current],
+                    //       };
+                    //       chrome.tabs.sendMessage(tabs[0].id, message);
+                    //     }
+                    //   );
+                    //   if(current > 0) {
+                    //     current -= 1
+                    //   }
+                    // };
+                    // document.getElementById("parent").appendChild(next);
+                    // document.getElementById("parent").appendChild(previous);
+                  } else {
+                    let next = document.getElementById("ads_next");
+                    let previous = document.getElementById("ads_previous");
+                    next.onclick = () => {
+                    //alert('FUCKKKKKKKKKK')
+                      chrome.tabs.query(
+                        { active: true, currentWindow: true },
+                        function (tabs) {
+                          var message = {
+                            action: "scrollTheFuckingAds",
+                            elementId_: Object.values(obj)[index][current1],
+                          };
+                          chrome.tabs.sendMessage(tabs[0].id, message);
+                        }
+                      );
+                      if(current1 < Object.values(obj)[index].length) {
+                        current1 += 1
+                      }
+                    };
+                    previous.onclick = () => {
+                      chrome.tabs.query(
+                        { active: true, currentWindow: true },
+                        function (tabs) {
+                          var message = {
+                            action: "scrollTheFuckingAds",
+                            elementId_: Object.values(obj)[index][current1],
+                          };
+                          chrome.tabs.sendMessage(tabs[0].id, message);
+                        }
+                      );
+                      if(current1 > 0) {
+                        current1 -= 1
+                      }
+                    };
+                  }
+              } 
+              else if (item == "review_check") {
+                newDiv.innerHTML = "Reviews Check: " + `<br><p id="redirection">${Object.values(obj)[index]}</p></br>`
+                newDiv.style.flexDirection = "column"
+                document.getElementById("redirection").onclick = () => {
+                  // alert(obj["current_url"])
+                  // chrome.tabs.create({url: obj["current_url"]})
+                  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+                    const currentTab = tabs[0];
+                  
+                    const currentUrl = currentTab.url;
+
+                    let url_ = currentUrl.split("/dp/");
+                    let newUrl = url_[0] + "/product-review/" + url_[1];
+
+                    chrome.tabs.create({url: newUrl})
+                  });
+                }
+              } 
+              else if (item == "mislead") {
+                newDiv.innerHTML = "Misleading Information Check: " + `<br>${Object.values(obj)[index]}</br>`
+              } 
+              else {
+                let base = window.location.href.split(".")[1].split(".")[0];
+                if (item.includes("_total_check")) {
+                  newDiv.innerHTML = "Amount Check: " + `<br>${Object.values(obj)[index]}</br>`
+                }
+              }
+            } 
+            else {
+              if (item == "stock_data") {
+                document.getElementById(item + index.toString()).innerHTML = "Stock Data" + `<br>${Object.values(obj)[index]}</br>`;
+              } 
+              
+              // else if (item == "countdown_data") {
+              //   document.getElementById(item + index.toString()).innerHTML = "Regarding Countdown" + `<br>${Object.values(obj)[index]}</br>`;
+              // } 
+              else if (item == "sponsored_content") {
+                // document.getElementById(item + index.toString()).textContent = "Sponsored Content" + " (" + Object.values(obj)[index].length.toString() + ")";
+                // if (
+                //   !document.getElementById("sponsored_next") &&
+                //   !document.getElementById("sponsored_prev")
+                // ) {
+                //   let next = document.createElement("div");
+                //   let previous = document.createElement("div");
+                //   next.id = "sponsored_next";
+                //   next.textContent = "Next";
+                //   previous.id = "sponsored_prev";
+                //   previous.textContent = "Previous";
+                //   let current = 0;
+
+                //   next.onclick = () => {
+                //     let obj_arr = Object.values(obj)[index];
+                //     let classValues = {};
+                //     if (obj_arr[current].type == "class") {
+                //       if (classValues[obj_arr[current].class]) {
+                //         classValues[obj_arr[current].class] =
+                //           classValues[obj_arr[current].class] + 1;
+                //       } else {
+                //         classValues[obj_arr[current].class] = 1;
+                //       }
+                //       console.log(classValues);
+                //       chrome.tabs.query(
+                //         { active: true, currentWindow: true },
+                //         function (tabs) {
+                //           var message = {
+                //             action: "scrollFromClass",
+                //             className: obj_arr[current].class,
+                //             index: classValues[obj_arr[current].class]
+                //               ? classValues[obj_arr[current].class]
+                //               : 0,
+                //           };
+                //           chrome.tabs.sendMessage(tabs[0].id, message);
+                //         }
+                //       );
+                //     } else {
+                //       chrome.tabs.query(
+                //         { active: true, currentWindow: true },
+                //         function (tabs) {
+                //           var message = {
+                //             action: "scrollToElement",
+                //             elementId: obj_arr[current].id,
+                //           };
+                //           chrome.tabs.sendMessage(tabs[0].id, message);
+                //         }
+                //       );
+                //     }
+                //     if (current < Object.values(obj)[index].length) {
+                //       current += 1;
+                //     }
+                //   };
+                //   previous.onclick = () => {
+                //     let obj_arr = Object.values(obj)[index];
+                //     let classValues = {};
+                //     if (obj_arr[current].type == "class") {
+                //       if (classValues[obj_arr[current].class]) {
+                //         classValues[obj_arr[current].class] =
+                //           classValues[obj_arr[current].class] + 1;
+                //       } else {
+                //         classValues[obj_arr[current].class] = 1;
+                //       }
+                //       console.log(classValues);
+                //       chrome.tabs.query(
+                //         { active: true, currentWindow: true },
+                //         function (tabs) {
+                //           var message = {
+                //             action: "scrollFromClass",
+                //             className: obj_arr[current].class,
+                //             index: classValues[obj_arr[current].class]
+                //               ? classValues[obj_arr[current].class]
+                //               : 0,
+                //           };
+                //           chrome.tabs.sendMessage(tabs[0].id, message);
+                //         }
+                //       );
+                //     } else {
+                //       chrome.tabs.query(
+                //         { active: true, currentWindow: true },
+                //         function (tabs) {
+                //           var message = {
+                //             action: "scrollToElement",
+                //             elementId: obj_arr[current].id,
+                //           };
+                //           chrome.tabs.sendMessage(tabs[0].id, message);
+                //         }
+                //       );
+                //     }
+                //     if (current > 0) {
+                //       current -= 1;
+                //     }
+                //   };
+                //   document.getElementById("parent").appendChild(next);
+                //   document.getElementById("parent").appendChild(previous);
+                // } else {
+                //   let next = document.getElementById("sponsored_next");
+                //   let previous = document.createElement("sponsored_prev");
+                //   let current = 0;
+                //   next.onclick = () => {
+                //     let obj_arr = Object.values(obj)[index];
+                //     let classValues = {};
+                //     if (obj_arr[current].type == "class") {
+                //       if (classValues[obj_arr[current].class]) {
+                //         classValues[obj_arr[current].class] =
+                //           classValues[obj_arr[current].class] + 1;
+                //       } else {
+                //         classValues[obj_arr[current].class] = 1;
+                //       }
+                //       console.log(classValues);
+                //       chrome.tabs.query(
+                //         { active: true, currentWindow: true },
+                //         function (tabs) {
+                //           var message = {
+                //             action: "scrollFromClass",
+                //             className: obj_arr[current].class,
+                //             index: classValues[obj_arr[current].class]
+                //               ? classValues[obj_arr[current].class]
+                //               : 0,
+                //           };
+                //           chrome.tabs.sendMessage(tabs[0].id, message);
+                //         }
+                //       );
+                //     } else {
+                //       chrome.tabs.query(
+                //         { active: true, currentWindow: true },
+                //         function (tabs) {
+                //           var message = {
+                //             action: "scrollToElement",
+                //             elementId: obj_arr[current].id,
+                //           };
+                //           chrome.tabs.sendMessage(tabs[0].id, message);
+                //         }
+                //       );
+                //     }
+                //     if (current < Object.values(obj)[index].length) {
+                //       current += 1;
+                //     }
+                //   };
+                //   previous.onclick = () => {
+                //     let obj_arr = Object.values(obj)[index];
+                //     let classValues = {};
+                //     if (obj_arr[current].type == "class") {
+                //       if (classValues[obj_arr[current].class]) {
+                //         classValues[obj_arr[current].class] =
+                //           classValues[obj_arr[current].class] + 1;
+                //       } else {
+                //         classValues[obj_arr[current].class] = 1;
+                //       }
+                //       console.log(classValues);
+                //       chrome.tabs.query(
+                //         { active: true, currentWindow: true },
+                //         function (tabs) {
+                //           var message = {
+                //             action: "scrollFromClass",
+                //             className: obj_arr[current].class,
+                //             index: classValues[obj_arr[current].class]
+                //               ? classValues[obj_arr[current].class]
+                //               : 0,
+                //           };
+                //           chrome.tabs.sendMessage(tabs[0].id, message);
+                //         }
+                //       );
+                //     } else {
+                //       chrome.tabs.query(
+                //         { active: true, currentWindow: true },
+                //         function (tabs) {
+                //           var message = {
+                //             action: "scrollToElement",
+                //             elementId: obj_arr[current].id,
+                //           };
+                //           chrome.tabs.sendMessage(tabs[0].id, message);
+                //         }
+                //       );
+                //     }
+                //     if (current > 0) {
+                //       current -= 1;
+                //     }
+                //   };
+                // }
+                newDiv.innerHTML = `<img src="images/prev.png" id="sponsored_prev" />` + " " +  "Sponsored Content" + " (" + Object.values(obj)[index].length.toString() + ")" + " " + `<img src="images/next.png" id="sponsored_next" />`;
+                
+                // document.getElementById(item + index.toString()).innerHTML =  `<img src="images/prev.png" id="ads_previous" />` + " " +  "UI Deception" + " (" + Object.values(obj)[index].length.toString() + ")" + " " + `<img src="images/next.png" id="ads_next" />`
+                // next.id = "sponsored_next";
+                // next.textContent = "Next";
+                // previous.id = "sponsored_prev";
+                // previous.textContent = "Previous";
+                let next = document.getElementById("sponsored_next");
+                let previous = document.getElementById("sponsored_prev");
+                
+                // let current = 0;
+
+                next.onclick = () => {
+                  // alert('Pepsi Cola')
+                  let obj_arr = Object.values(obj)[index];
+                  let classValues = {};
+                  if (obj_arr[current].type == "class") {
+                    // alert(obj_arr[current].class)
+                    if (classValues[obj_arr[current].class]) {
+                      classValues[obj_arr[current].class] =
+                        classValues[obj_arr[current].class] + 1;
+                    } else {
+                      classValues[obj_arr[current].class] = 1;
+                    }
+                    console.log(classValues);
+                    chrome.tabs.query(
+                      { active: true, currentWindow: true },
+                      function (tabs) {
+                        var message = {
+                          action: "scrollFromClass",
+                          className: obj_arr[current].class,
+                          index: classValues[obj_arr[current].class]
+                            ? classValues[obj_arr[current].class]
+                            : 0,
+                        };
+                        chrome.tabs.sendMessage(tabs[0].id, message);
+                      }
+                    );
+                  } else {
+                    // console.log(obj_arr)
+                    // console.log(obj_arr[current])
+                    // alert(JSON.stringify(obj_arr[current]))
+                    chrome.tabs.query(
+                      { active: true, currentWindow: true },
+                      function (tabs) {
+                        var message = {
+                          action: "scrollToElement",
+                          elementId: obj_arr[spon_current_1].id,
+                        };
+                        chrome.tabs.sendMessage(tabs[0].id, message);
+                      }
+                    );
+                  }
+                  if (spon_current_1 < Object.values(obj)[index].length) {
+                    spon_current_1 += 1;
+                  }
+                };
+
+                previous.onclick = () => {
+                  let obj_arr = Object.values(obj)[index];
+                  let classValues = {};
+                  if (obj_arr[current].type == "class") {
+                    if (classValues[obj_arr[current].class]) {
+                      classValues[obj_arr[current].class] =
+                        classValues[obj_arr[current].class] + 1;
+                    } else {
+                      classValues[obj_arr[current].class] = 1;
+                    }
+                    console.log(classValues);
+                    chrome.tabs.query(
+                      { active: true, currentWindow: true },
+                      function (tabs) {
+                        var message = {
+                          action: "scrollFromClass",
+                          className: obj_arr[spon_current_1].class,
+                          index: classValues[obj_arr[spon_current_1].class]
+                            ? classValues[obj_arr[spon_current_1].class]
+                            : 0,
+                        };
+                        chrome.tabs.sendMessage(tabs[0].id, message);
+                      }
+                    );
+                  } else {
+                    chrome.tabs.query(
+                      { active: true, currentWindow: true },
+                      function (tabs) {
+                        var message = {
+                          action: "scrollToElement",
+                          elementId: obj_arr[spon_current_1].id,
+                        };
+                        chrome.tabs.sendMessage(tabs[0].id, message);
+                      }
+                    );
+                  }
+                  if (spon_current_1 > 0) {
+                    spon_current_1 -= 1;
+                  }
+                };
+                // console.log(Object.values(obj)[index]);
+              } else if (item == "more_prods") {
+                // document.getElementById(item + index.toString()).textContent =
+                  
+                //   "Force Buy" +
+                //   " (" +
+                //   Object.values(obj)[index].length.toString() +
+                //   ")";
+                // if (
+                //   !document.getElementById("sponsored_next1") &&
+                //   !document.getElementById("sponsored_prev1")
+                // ) {
+                //   let next = document.createElement("div");
+                //   let previous = document.createElement("div");
+
+                //   next.id = "sponsored_next1";
+                //   next.textContent = "Next";
+                //   previous.id = "sponsored_prev1";
+                //   previous.textContent = "Previous";
+                //   let current = 0;
+
+                //   next.onclick = () => {
+                //     let obj_arr = Object.values(obj)[index];
+                //     let classValues = {};
+                //     if (obj_arr[current].type == "class") {
+                //       if (classValues[obj_arr[current].class]) {
+                //         classValues[obj_arr[current].class] =
+                //           classValues[obj_arr[current].class] + 1;
+                //       } else {
+                //         classValues[obj_arr[current].class] = 1;
+                //       }
+                //       console.log(classValues);
+                //       chrome.tabs.query(
+                //         { active: true, currentWindow: true },
+                //         function (tabs) {
+                //           var message = {
+                //             action: "scrollFromClass",
+                //             className: obj_arr[current].class,
+                //             index: classValues[obj_arr[current].class]
+                //               ? classValues[obj_arr[current].class]
+                //               : 0,
+                //           };
+                //           chrome.tabs.sendMessage(tabs[0].id, message);
+                //         }
+                //       );
+                //     } else {
+                //       // alert(JSON.stringify(obj_arr))
+                //       // alert(JSON.stringify(obj_arr[current]))
+                //       // alert(JSON.stringify(obj_arr[current].id))
+                //       // alert(current)
+                //       chrome.tabs.query(
+                //         { active: true, currentWindow: true },
+                //         function (tabs) {
+                //           var message = {
+                //             action: "scrollToElement_",
+                //             elementId_: obj_arr[current].id,
+                //           };
+
+                //           chrome.tabs.sendMessage(tabs[0].id, message);
+                //         }
+                //       );
+                //     }
+                //     if (current < Object.values(obj)[index].length) {
+                //       current += 1;
+                //     }
+                //   };
+
+                //   previous.onclick = () => {
+                //     let obj_arr = Object.values(obj)[index];
+                //     let classValues = {};
+                //     if (obj_arr[current].type == "class") {
+                //       if (classValues[obj_arr[current].class]) {
+                //         classValues[obj_arr[current].class] =
+                //           classValues[obj_arr[current].class] + 1;
+                //       } else {
+                //         classValues[obj_arr[current].class] = 1;
+                //       }
+                //       console.log(classValues);
+                //       chrome.tabs.query(
+                //         { active: true, currentWindow: true },
+                //         function (tabs) {
+                //           var message = {
+                //             action: "scrollFromClass",
+                //             className: obj_arr[current].class,
+                //             index: classValues[obj_arr[current].class]
+                //               ? classValues[obj_arr[current].class]
+                //               : 0,
+                //           };
+                //           chrome.tabs.sendMessage(tabs[0].id, message);
+                //         }
+                //       );
+                //     } else {
+                //       chrome.tabs.query(
+                //         { active: true, currentWindow: true },
+                //         function (tabs) {
+                //           var message = {
+                //             action: "scrollToElement_",
+                //             elementId_: obj_arr[current].id,
+                //           };
+                //           chrome.tabs.sendMessage(tabs[0].id, message);
+                //         }
+                //       );
+                //     }
+                //     if (current > 0) {
+                //       current -= 1;
+                //     }
+                //   };
+                //   document.getElementById("parent").appendChild(next);
+                //   document.getElementById("parent").appendChild(previous);
+                // } else {
+                //   let next = document.getElementById("sponsored_next1");
+                //   let previous = document.getElementById("sponsored_prev1");
+
+                //   let current = 0;
+
+                //   next.onclick = () => {
+                //     let obj_arr = Object.values(obj)[index];
+                //     let classValues = {};
+                //     if (obj_arr[current].type == "class") {
+                //       if (classValues[obj_arr[current].class]) {
+                //         classValues[obj_arr[current].class] =
+                //           classValues[obj_arr[current].class] + 1;
+                //       } else {
+                //         classValues[obj_arr[current].class] = 1;
+                //       }
+                //       console.log(classValues);
+                //       chrome.tabs.query(
+                //         { active: true, currentWindow: true },
+                //         function (tabs) {
+                //           var message = {
+                //             action: "scrollFromClass",
+                //             className: obj_arr[current].class,
+                //             index: classValues[obj_arr[current].class]
+                //               ? classValues[obj_arr[current].class]
+                //               : 0,
+                //           };
+                //           chrome.tabs.sendMessage(tabs[0].id, message);
+                //         }
+                //       );
+                //     } else {
+                //       // alert(JSON.stringify(obj_arr))
+                //       // alert(JSON.stringify(obj_arr[current]))
+                //       // alert(JSON.stringify(obj_arr[current].id))
+                //       // alert(current)
+                //       chrome.tabs.query(
+                //         { active: true, currentWindow: true },
+                //         function (tabs) {
+                //           var message = {
+                //             action: "scrollToElement_",
+                //             elementId_: obj_arr[current].id,
+                //           };
+
+                //           chrome.tabs.sendMessage(tabs[0].id, message);
+                //         }
+                //       );
+                //     }
+                //     if (current < Object.values(obj)[index].length) {
+                //       current += 1;
+                //     }
+                //   };
+
+                //   previous.onclick = () => {
+                //     let obj_arr = Object.values(obj)[index];
+                //     let classValues = {};
+                //     if (obj_arr[current].type == "class") {
+                //       if (classValues[obj_arr[current].class]) {
+                //         classValues[obj_arr[current].class] =
+                //           classValues[obj_arr[current].class] + 1;
+                //       } else {
+                //         classValues[obj_arr[current].class] = 1;
+                //       }
+                //       console.log(classValues);
+                //       chrome.tabs.query(
+                //         { active: true, currentWindow: true },
+                //         function (tabs) {
+                //           var message = {
+                //             action: "scrollFromClass",
+                //             className: obj_arr[current].class,
+                //             index: classValues[obj_arr[current].class]
+                //               ? classValues[obj_arr[current].class]
+                //               : 0,
+                //           };
+                //           chrome.tabs.sendMessage(tabs[0].id, message);
+                //         }
+                //       );
+                //     } else {
+                //       chrome.tabs.query(
+                //         { active: true, currentWindow: true },
+                //         function (tabs) {
+                //           var message = {
+                //             action: "scrollToElement_",
+                //             elementId_: obj_arr[current].id,
+                //           };
+                //           chrome.tabs.sendMessage(tabs[0].id, message);
+                //         }
+                //       );
+                //     }
+                //     if (current > 0) {
+                //       current -= 1;
+                //     }
+                //   };
+                // }
+
+                newDiv.innerHTML = `<img src="images/prev.png" id="sponsored_prev1" />` + " " +  "Force Buy" + " (" + Object.values(obj)[index].length.toString() + ")" + " " + `<img src="images/next.png" id="sponsored_next1" />`;
+                let next = document.getElementById("sponsored_next1");
+                let previous = document.getElementById("sponsored_prev1");
+                // next.id = "sponsored_next1";
+                // next.textContent = "Next";
+                // previous.id = "sponsored_prev1";
+                // previous.textContent = "Previous";
+                // let current = 0;
+
+                next.onclick = () => {
+                  let obj_arr = Object.values(obj)[index];
+                  let classValues = {};
+                  if (obj_arr[current].type == "class") {
+                    // alert(obj_arr[current].class)
+                    if (classValues[obj_arr[current].class]) {
+                      classValues[obj_arr[current].class] =
+                        classValues[obj_arr[current].class] + 1;
+                    } else {
+                      classValues[obj_arr[current].class] = 1;
+                    }
+                    console.log(classValues);
+                    chrome.tabs.query(
+                      { active: true, currentWindow: true },
+                      function (tabs) {
+                        var message = {
+                          action: "scrollFromClass",
+                          className: obj_arr[current].class,
+                          index: classValues[obj_arr[current].class]
+                            ? classValues[obj_arr[current].class]
+                            : 0,
+                        };
+                        chrome.tabs.sendMessage(tabs[0].id, message);
+                      }
+                    );
+                  } else {
+                    // alert(JSON.stringify(obj_arr))
+                    // alert(JSON.stringify(obj_arr[current]))
+                    // alert(JSON.stringify(obj_arr[current].id))
+                    // alert(current)
+                    chrome.tabs.query(
+                      { active: true, currentWindow: true },
+                      function (tabs) {
+                        var message = {
+                          action: "scrollToElement_",
+                          elementId_: obj_arr[more_1].id,
+                        };
+
+                        chrome.tabs.sendMessage(tabs[0].id, message);
+                      }
+                    );
+                  }
+                  if (more_1 < Object.values(obj)[index].length) {
+                    more_1 += 1;
+                  }
+                };
+
+                previous.onclick = () => {
+                  let obj_arr = Object.values(obj)[index];
+                  let classValues = {};
+                  if (obj_arr[current].type == "class") {
+                    // alert(obj_arr[current].class)
+                    if (classValues[obj_arr[current].class]) {
+                      classValues[obj_arr[current].class] =
+                        classValues[obj_arr[current].class] + 1;
+                    } else {
+                      classValues[obj_arr[current].class] = 1;
+                    }
+                    console.log(classValues);
+                    chrome.tabs.query(
+                      { active: true, currentWindow: true },
+                      function (tabs) {
+                        var message = {
+                          action: "scrollFromClass",
+                          className: obj_arr[current].class,
+                          index: classValues[obj_arr[current].class]
+                            ? classValues[obj_arr[current].class]
+                            : 0,
+                        };
+                        chrome.tabs.sendMessage(tabs[0].id, message);
+                      }
+                    );
+                  } else {
+                    chrome.tabs.query(
+                      { active: true, currentWindow: true },
+                      function (tabs) {
+                        var message = {
+                          action: "scrollToElement_",
+                          elementId_: obj_arr[more_1].id,
+                        };
+                        chrome.tabs.sendMessage(tabs[0].id, message);
+                      }
+                    );
+                  }
+                  if (more_1 > 0) {
+                    more_1 -= 1;
+                  }
+                };
+
+              } else if (item == "protocol") {
+                document.getElementById(item + index.toString()).innerHTML = "Protocol: " + `<br>${Object.values(obj)[index]}</br>`
+              } else if (item == "cookies") {
+                document.getElementById(item + index.toString()).innerHTML = "Cookies: " + `<br>${Object.values(obj)[index]}</br>`
+              } else if (item == "ads_with_ids") {
+                // document.getElementById(item + index.toString()).innerHTML =  `<img src="images/prev.png" id="ads_previous" />` + " " +  "UI Deception" + " (" + Object.values(obj)[index].length.toString() + ")" + " " + `<img src="images/next.png" id="ads_next" />`;
+                if(!document.getElementById("ads_next") &&
+                !document.getElementById("ads_previous")) {
+                  newDiv.innerHTML = `<img src="images/prev.png" id="ads_previous" />` + " " +  "UI Deception" + " (" + Object.values(obj)[index].length.toString() + ")" + " " + `<img src="images/next.png" id="ads_next" />`;
+                }
+                  // console.log(Object.values(obj)[index])
+                    let next = document.getElementById("ads_next");
+                    let previous = document.getElementById("ads_previous");
+                    next.onclick = () => {
+                    //alert('FUCKKKKKKKKKK')
+                      chrome.tabs.query(
+                        { active: true, currentWindow: true },
+                        function (tabs) {
+                          var message = {
+                            action: "scrollTheFuckingAds",
+                            elementId_: Object.values(obj)[index][current],
+                          };
+                          chrome.tabs.sendMessage(tabs[0].id, message);
+                        }
+                      );
+                      if(current < Object.values(obj)[index].length) {
+                        current += 1
+                      }
+                    console.log(current)
+
+                    };
+                    previous.onclick = () => {
+                      chrome.tabs.query(
+                        { active: true, currentWindow: true },
+                        function (tabs) {
+                          var message = {
+                            action: "scrollTheFuckingAds",
+                            elementId_: Object.values(obj)[index][current],
+                          };
+                          chrome.tabs.sendMessage(tabs[0].id, message);
+                        }
+                      );
+                      if(current > 0) {
+                        current -= 1
+                      }
+                    };
+
+              } else if (item == "review_check") {
+                // document.getElementById(item + index.toString()).innerHTML = "Reviews Check: " + `<br>${Object.values(obj)[index]}</br>`
+                // document.getElementById(item + index.toString()).innerHTML = "Reviews Check: " + `<br><p id="redirection">${Object.values(obj)[index]}</p></br>`
+                // document.getElementById("redirection").onclick = () => {
+                //   alert(obj["current_url"])
+                //   chrome.tabs.create({url: obj["current_url"]})
+                // }
+                document.getElementById(item + index.toString()).innerHTML = "Reviews Check: " + `<br><p id="redirection">${Object.values(obj)[index]}</p></br>`
+                document.getElementById(item + index.toString()).style.flexDirection = "column"
+                document.getElementById("redirection").onclick = () => {
+                  // alert(obj["current_url"])
+                  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+                    const currentTab = tabs[0];
+                  
+                    const currentUrl = currentTab.url;
+
+                    let url_ = currentUrl.split("/dp/");
+                    let newUrl = url_[0] + "/product-review/" + url_[1];
+
+                    chrome.tabs.create({url: newUrl})
+                  });
+                }
+              }
+              else if (item == "mislead") {
+                newDiv.innerHTML = "Misleading Information Check: " + `<br>${Object.values(obj)[index]}</br>`
+              }  
+              if (item == "amazon_policy") {
+                newDiv.innerHTML = "Transparency Check" + `<br>${Object.values(obj)[index]}</br>`
+              } 
+              else {
+                let base = window.location.href.split(".")[1].split(".")[0];
+                if (item.includes("_total_check")) {
+                  document.getElementById(item + index.toString()).innerHTML = "Amount Check: " + `<br>${Object.values(obj)[index]}</br>`
+                }
+              }
+              document.getElementById(item + index.toString()).style.color =
+                "white";
+              document.getElementById(item + index.toString()).style.fontSize =
+                "1rem";
+              document.getElementById(item + index.toString()).style.margin =
+                "1rem";
+            }
+          });
+        }
+      });
+    }
+
+    function arraysAreEqual(array1, array2) {
+      // return (
+      //   array1.length === array2.length &&
+      //   array1.every((value, index) => value === array2[index])
+      // );
+      return false;
+    }
+  // }, 500);
+};

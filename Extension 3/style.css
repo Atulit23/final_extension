@@ -435,7 +435,7 @@ body {
 
 .mainBtns {
   display: flex;
-  height: 2.5rem;
+  /* height: 2.5rem; */
 }
 
 #scanBtn1 {
@@ -454,4 +454,112 @@ body {
   text-decoration-line: underline;
   color: #5252ff;
   cursor: pointer;
+}
+
+#sponsored_next {
+  /* color: white;
+  background: #abaaaa;
+  margin: 1rem;
+  padding: 0.3rem 0.6rem;
+  width: 3rem;
+  cursor: pointer; */
+  width: 0.8rem;
+  height: 0.8rem;
+  margin-top: 0.25rem;
+  margin-right: 0.35rem;
+  cursor: pointer;
+}
+
+#sponsored_prev {
+  /* color: white;
+  background: #abaaaa;
+  margin: 1rem;
+  padding: 0.3rem 0.6rem;
+  width: 3rem;
+  cursor: pointer; */
+  width: 0.8rem;
+  height: 0.8rem;
+  margin-top: 0.25rem;
+  margin-right: 0.35rem;
+  cursor: pointer;
+}
+
+#sponsored_next1 {
+  /* color: white;
+  background: #abaaaa;
+  margin: 1rem;
+  padding: 0.3rem 0.6rem;
+  width: 3rem;
+  cursor: pointer; */
+  width: 0.8rem;
+  height: 0.8rem;
+  margin-top: 0.25rem;
+  margin-right: 0.35rem;
+  cursor: pointer;
+}
+
+#sponsored_prev1 {
+  /* color: white;
+  background: #abaaaa;
+  margin: 1rem;
+  padding: 0.3rem 0.6rem;
+  width: 3rem;
+  cursor: pointer; */
+  width: 0.8rem;
+  height: 0.8rem;
+  margin-top: 0.25rem;
+  margin-right: 0.35rem;
+  cursor: pointer;
+}
+
+#ads_next {
+  /* color: white;
+  background: #abaaaa;
+  margin: 1rem;
+  padding: 0.3rem 0.6rem;
+  width: 3rem;
+  cursor: pointer; */
+  width: 0.8rem;
+  height: 0.8rem;
+  margin-top: 0.25rem;
+  margin-left: 0.35rem;
+  cursor: pointer;
+}
+
+#ads_previous {
+  /* color: white;
+  background: #abaaaa;
+  margin: 1rem;
+  padding: 0.3rem 0.6rem;
+  width: 3rem;
+  cursor: pointer;   */
+  width: 0.8rem;
+  height: 0.8rem;
+  margin-top: 0.25rem;
+  margin-right: 0.35rem;
+  cursor: pointer;
+}
+
+#parent {
+  height: 19rem;
+  overflow-y: scroll;
+}
+
+#parent::-webkit-scrollbar {
+  display: none;
+}
+
+.someRandomThings {
+  display: flex;
+  justify-content: center;
+  text-align: center;
+}
+
+#ads_with_classes2 {
+  display: none !important;
+}
+
+#redirection {
+  cursor: pointer;
+  margin: 0;
 }
