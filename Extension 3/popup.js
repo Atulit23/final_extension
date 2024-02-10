@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", (event) => {
   document.getElementById("feedback").addEventListener("click", () => {
     document.getElementById("google_form").style.display = "block";
-    document.getElementById("rest").style.display = "none";
+    document.getElementById("rst").style.display = "none";
   });
 });
 
