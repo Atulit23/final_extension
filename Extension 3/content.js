@@ -301,9 +301,9 @@ function checkForSpecificLabel() {
 }
 
 function detectMyntra() {
-  var telInput = document.querySelector('input[type="tel"]');
+  var telInput = document.querySelector('div.signInContainer');
   if (telInput) {
-    alert("Alert! Forced Account Creation Detected on Myntra");
+    // alert("Alert! Forced Account Creation Detected on Myntra");
     allResults["forced_account"] =
       "Only Create Account if you trust this website!";
     showCustomPopup("Alert! Forced Account Creation Detected on Myntra");
