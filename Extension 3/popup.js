@@ -63,8 +63,17 @@ window.onload = () => {
               if (item == "stock_data") {
                 newDiv.innerHTML = "Stock Data" + `<br>${Object.values(obj)[index]}</br>`
               } 
-              if (item == "amazon_policy") {
+              else if (item == "subscription_details") {
+                newDiv.innerHTML = "Billing Cycle Details" + `<br>${Object.values(obj)[index]}</br>`
+              } 
+              else if (item == "amazon_policy") {
                 newDiv.innerHTML = "Transparency Check" + `<br>${Object.values(obj)[index]}</br>`
+              } 
+              else if (item == "terms") {
+                newDiv.innerHTML = "About Terms of Cancellation" + `<br>${Object.values(obj)[index]}</br>`
+              } 
+              else if (item == "how_to_cancel") {
+                newDiv.innerHTML = "About how to cancel" + `<br>${Object.values(obj)[index]}</br>`
               } 
               // else if (item == "countdown_data") {
               //   document.getElementById(item + index.toString()).innerHTML = "Regarding Countdown" + `<br>${Object.values(obj)[index]}</br>`;
@@ -383,7 +392,15 @@ window.onload = () => {
               if (item == "stock_data") {
                 document.getElementById(item + index.toString()).innerHTML = "Stock Data" + `<br>${Object.values(obj)[index]}</br>`;
               } 
-              
+              else if (item == "subscription_details") {
+                newDiv.innerHTML = "Billing Cycle Details" + `<br>${Object.values(obj)[index]}</br>`
+              } 
+              else if (item == "terms") {
+                newDiv.innerHTML = "About Terms of Cancellation" + `<br>${Object.values(obj)[index]}</br>`
+              } 
+              else if (item == "how_to_cancel") {
+                newDiv.innerHTML = "About how to cancel" + `<br>${Object.values(obj)[index]}</br>`
+              } 
               // else if (item == "countdown_data") {
               //   document.getElementById(item + index.toString()).innerHTML = "Regarding Countdown" + `<br>${Object.values(obj)[index]}</br>`;
               // } 
@@ -1040,7 +1057,7 @@ window.onload = () => {
               else if (item == "mislead") {
                 newDiv.innerHTML = "Misleading Information Check: " + `<br>${Object.values(obj)[index]}</br>`
               }  
-              if (item == "amazon_policy") {
+              else if (item == "amazon_policy") {
                 newDiv.innerHTML = "Transparency Check" + `<br>${Object.values(obj)[index]}</br>`
               } 
               else {

@@ -1,33 +1,25 @@
 import requests
-from bs4 import BeautifulSoup
-import pdfkit
-import fitz  # PyMuPDF library for extracting text from PDF
 
-def get_html(url):
-    response = requests.get(url)
-    return response.text
+API_URL = "https://api-inference.huggingface.co/models/google/flan-t5-large"
+headers = {"Authorization": "Bearer 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"}
 
-def save_pdf(html_content, pdf_path):
-    pdfkit.from_file(html_content, pdf_path)
+def query(payload):
+	response = requests.post(API_URL, headers=headers, json=payload)
+	return response.json()
+	
+output = query({
+	"inputs": '''You may decide to cancel your Account whenever you want, at your sole discretion.
 
-def extract_text_from_pdf(pdf_path):
-    doc = fitz.open(pdf_path)
-    text = ""
-    for page_num in range(doc.page_count):
-        page = doc[page_num]
-        text += page.get_text()
-    return text
+We may do the same, and we reserve the right to suspend or terminate your access to the Services anytime with or without cause, and at our own discretion, with or without notice.
 
-def main():
-    url = "https://www.linkedin.com/pulse/dark-patterns-ultimate-conversion-blocker-ecommerce-jon-macdonald/"
-    html_content = get_html(url)
-    pdf_path = "output.pdf"
+Upon cancellation of your Account, we will use commercially reasonable efforts to delete your information and Content of your own Repositories, whether public or private, within 90 days. We will not delete the Content that you contributed to other Users' Repositories, or copies made by us or other Users.
 
-    save_pdf(html_content, pdf_path)
-    extracted_text = extract_text_from_pdf(pdf_path)
+We also reserve the right to retain your information for legal or regulatory compliance, pursuant to standard archiving, recovery, and back-up processes and practices, and pursuant to our Privacy Policy.
 
-    print("Extracted Text:")
-    print(extracted_text)
+For certain Services, the Service Term and causes for termination may be specified in the Supplemental Terms and/or in any other binding document signed between us, including but not limited to an Order Form, a Scope of Work, or a Master Service Agreement, which are fully incorporated into the Agreement between us.
 
-if __name__ == "__main__":
-    main()
+Are the terms of cancellation clear? Answer in yes or no.
+ ''',
+})
+
+print(output)

@@ -1,3 +1,6 @@
+import { client } from "@gradio/client";
+const app = await client("https://atulit23-google-flan-t5.hf.space/");
+
 let allResults = localStorage.getItem(window.location.href + "further")
   ? JSON.parse(localStorage.getItem(window.location.href + "further"))
   : { current_url: window.location.href };
@@ -101,12 +104,14 @@ function checkForFalseStock() {
   var labels = document.getElementsByTagName("span");
   var ps = document.getElementsByTagName("p");
   var ds = document.getElementsByTagName("div");
+  const regex = /only\s*(\d+|few)\s*(left|left\s*in\s*stock)/i;
 
   var labelsArray = Array.from(labels);
   var psArray = Array.from(ps);
   var dsArray = Array.from(ds);
 
-  var concatenatedArray = [...labelsArray, ...psArray];
+  var concatenatedArray = [...labelsArray, ...psArray, ...dsArray];
+
   if (
     document.getElementById("availability") && window.location.href.includes("amazon")
   ) {
@@ -157,6 +162,17 @@ function checkForFalseStock() {
     }
 
   }
+
+  for(let i = 0; i < concatenatedArray.length; i++) {
+    var innerText = concatenatedArray[i].innerText.toLowerCase()
+
+    if(regex.test(innerText)) {
+      if(concatenatedArray[i].children.length === 0) {
+        concatenatedArray[i].style.border = "3px solid red"
+      }
+    }
+  }
+
 }
 
 function checkForSponsored() {
@@ -255,7 +271,10 @@ function checkForSponsored() {
       labelText.includes("buy it with") ||
       labelText.includes("also liked") ||
       labelText.includes("also like") ||
-      labelText.includes("related to")
+      labelText.includes("related to") ||
+      labelText.includes("related products") ||
+      labelText.includes("also bought") ||
+      labelText.includes("you may like")
     ) {
       if (concatenatedArray[i].children.length == 0) {
         if (!concatenatedArray[i].id) {
@@ -303,7 +322,7 @@ function checkForSpecificLabel() {
 function detectMyntra() {
   var telInput = document.querySelector('input[type="tel"]');
   if (telInput) {
-    alert("Alert! Forced Account Creation Detected on Myntra");
+    // alert("Alert! Forced Account Creation Detected on Myntra");
     allResults["forced_account"] =
       "Only Create Account if you trust this website!";
     showCustomPopup("Alert! Forced Account Creation Detected on Myntra");
@@ -506,9 +525,9 @@ function analyzePrivacyPolicy3() {
       if (concerningPhrases.length > 0) {
         allResults["myntra_policy"] =
           "Privacy policy contains deceptive keywords which may lead to data leaks";
-        alert(
-          "Privacy policy contains deceptive keywords which may lead to data leaks"
-        );
+        // alert(
+        //   "Privacy policy contains deceptive keywords which may lead to data leaks"
+        // );
         console.log(
           "Privacy policy of this website contains deceptive keywords which may lead to data leaks",
           concerningPhrases
@@ -549,9 +568,9 @@ function analyzePrivacyPolicy4() {
       if (concerningPhrases.length > 0) {
         allResults["giznext_policy"] =
           "Privacy policy contains deceptive keywords which may lead to data leaks.";
-        alert(
-          "Privacy policy contains deceptive keywords which may lead to data leaks"
-        );
+        // alert(
+        //   "Privacy policy contains deceptive keywords which may lead to data leaks"
+        // );
         console.log(
           "Privacy policy of this website contains deceptive keywords which may lead to data leaks",
           concerningPhrases
@@ -645,13 +664,13 @@ const detectUIDeception = () => {
     if (classNames.length > 0) {
       var classListArray = Array.from(classNames);
       var classListString = classListArray.join(" ");
-
-      if (classListString.toLowerCase().includes("google")) {
+       
+      if (classListString.toLowerCase().includes("google") && !classListString.toLowerCase().includes("logo") && !classListString.toLowerCase().includes("googleplus") && !classListString.toLowerCase().includes("icons")) {
         classesWithGoogle.push(classListString);
       }
     }
-    var idName = element.id;
-    if (idName.toLowerCase().includes("google")) {
+    var idName = element.id; 
+    if (idName.toLowerCase().includes("google") && !idName.toLowerCase().includes("logo") && !idName.toLowerCase().includes("googleplus") && !idName.toLowerCase().includes("icons")) {
       idsWithGoogle.push(idName);
     }
   });
@@ -1061,8 +1080,265 @@ function checkReviews() {
     }
   }
 }
+
+function checkForBillingCycle() {
+  if(window.location.href.includes("pricing") || window.location.href.includes("membership") || window.location.href.includes("planform")) {
+    const regex = /^(\$?[^\/\d]+[0-9]+(\.[0-9]+)?|[^\d\/]+)\s*(\/|\s*\/\s*)\s*([a-zA-Z]+)$/;
+    const timeUnits = ['hour', 'hours', 'minute', 'minutes', 'month', 'week', 'year', 'monthly', 'weekly', 'yearly', 'day', 'daily'];
+    const pTags = Array.from(document.getElementsByTagName("p"))
+    const divTags = Array.from(document.getElementsByTagName("div"))
+    const spanTags = Array.from(document.getElementsByTagName("span"))
+    let arr = []
+
+    const concatenatedArray = [...pTags, ...divTags, ...spanTags]
+
+    for(let i = 0; i < concatenatedArray.length; i++) {
+      var currentText = concatenatedArray[i].innerText.toLowerCase()
+      if(regex.test(currentText) || currentText.includes("monthly price") || currentText.includes("yearly price") || currentText.includes("weekly price")) {
+        console.log(currentText)
+        allResults['subscription_details'] = 'Billing Cycle is defined clearly!'
+        arr.push(concatenatedArray[i])
+        if(concatenatedArray[i].children.length == 0) {
+          // concatenatedArray[i].parentElement.style.border = '3px solid red'
+          // concatenatedArray[i].style.border = '3px solid red'
+        }
+      } 
+    }
+
+    if(arr.length == 0) {
+      allResults['subscription_details'] = 'Billing Cycle is kept hidden!'
+    }
+  }
+}
+
+async function analyseCancellation () {
+  var terms_url = ""
+  var as = Array.from(document.getElementsByTagName("a"))
+  var base = window.location.href.split(".")[1].split(".")[0];
+  var base_url = "https://trick-solution.onrender.com"
+
+  for(let i = 0; i < as.length; i++) {
+    if(as[i].innerText.toLowerCase().includes("terms")) {
+      console.log(as[i].href)
+      terms_url = as[i].href
+    }
+  }
+
+  if(window.location.href.includes("pricing") || window.location.href.includes("membership") || window.location.href.includes("planform") || window.location.href.includes("paywall")) {
+    alert(terms_url)
+    if(terms_url === "") {
+      allResults["terms"] = "The terms of cancellation are not clear."
+      allResults["how_to_cancel"] = "They don't explain you how to cancel your subscription!"
+    } else {
+        // how to cancel
+        fetch(`${base_url}/how-to-cancel?url=${terms_url}`)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json(); 
+        })
+        .then(data => {
+          allResults["how_to_cancel"] = data.response
+        })
+        .catch(error => {
+          console.error('There was a problem with the fetch operation:', error);
+        });
+        // review terms of cancellation
+        fetch(`${base_url}/review-terms-of-cancellation?url=${terms_url}`)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json(); 
+        })
+        .then(data => {
+          allResults["terms"] = data.response
+        })
+        .catch(error => {
+          console.error('There was a problem with the fetch operation:', error);
+        });
+
+      console.log(result.data);
+        }
+  }
+}
+
+const amazonUrl = window.location.href
+
+const fetchOptions = {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+};
+
+async function fetchData(url) {
+  const response = await fetch(url, fetchOptions);
+  const data = await response.json();
+  return data;
+}
+
+async function getAmazonData() {
+  if(amazonUrl.includes("amazon") && (amazonUrl.includes("/dp/") || window.location.href.includes("/gp/"))) {
+    alert(amazonUrl)
+    // const response = await fetchData(amazonUrl);
+    // const amazonTitle = document.getElementById('productTitle').innerText.trim();
+    // const amazonDesc = document.getElementById('feature-bullets').innerText.trim();
+
+    // const flipkartUrl = await getFlipkartUrl(amazonTitle);
+
+    // if (!flipkartUrl) {
+    //   return { amazonTitle, amazonDesc, flipkartDesc: '', result: 'Error: Flipkart URL not found' };
+    // }
+
+    // const flipkartDesc = await getFlipkartDesc(flipkartUrl);
+
+    // const descriptionToCompare = `First description: ${amazonDesc} Second Description: ${flipkartDesc} As you can see I have provided you with two descriptions. Compare these two descriptions to see if for the same field some different information has been provided. Answer in yes or no.`;
+
+    // // const result = await predictDescription(descriptionToCompare);
+    // const result = 'yes';
+
+    // const finalResult = {
+    //   Amazon: amazonDesc,
+    //   Flipkart: flipkartDesc,
+    //   result: result.includes('yes') ? 'Mismatch Detected between the descriptions at Amazon & Flipkart.' : 'No Mismatch Detected between the descriptions at Amazon & Flipkart.',
+    // };
+
+    // console.log(amazonUrl);
+    // console.log(descriptionToCompare);
+    // console.log(finalResult);
+    let amazonTitle = ""
+    let amazonDesc = ""
+    fetch(amazonUrl)
+  .then(response => response.text())
+  .then(html => {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+
+    // Extracting data from the Amazon page
+    amazonTitle = doc.getElementById('productTitle').innerText.trim();
+    amazonDesc = doc.getElementById('feature-bullets').innerText.trim();
+
+    console.log(amazonTitle)
+    console.log(amazonDesc)
+
+    // Constructing the Flipkart search URL
+    const flipkartSearchUrl = `https://www.flipkart.com/search?q=${amazonTitle.split(' ').slice(0, 6).join('+')}`;
+
+    // Fetching data from the Flipkart search page
+    return fetch(flipkartSearchUrl);
+  })
+  .then(response => response.text())
+  .then(html => {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+
+    // Extracting Flipkart URL
+    let flipkartUrl = '';
+    const elements = doc.querySelectorAll('._2rpwqI, ._1fQZEK');
+    for (const element of elements) {
+      const textContent = element.getAttribute('href');
+      if (amazonTitle.toLowerCase().includes(textContent)) {
+        flipkartUrl = textContent.startsWith('http') ? textContent : `https://www.flipkart.com${textContent}`;
+        break;
+      }
+    }
+
+    if (!flipkartUrl) {
+      throw new Error('Flipkart URL not found');
+    }
+
+    return fetch(flipkartUrl);
+  })
+  .then(response => response.text())
+  .then(html => {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+
+    // Extracting Flipkart description
+    let flipkartDesc = '';
+    const finalElements = doc.querySelectorAll('._2418kt');
+    finalElements.forEach(element => {
+      flipkartDesc = element.innerText;
+    });
+
+    // Constructing the description to compare
+    const descriptionToCompare = `First description: ${amazonDesc} Second Description: ${flipkartDesc} As you can see I have provided you with two descriptions. Compare these two descriptions to see if for the same field some different information has been provided. Answer in yes or no.`;
+
+    console.log(descriptionToCompare)
+    
+    // Predicting the result
+    return fetch("https://atulit23-google-flan-t5.hf.space/predict", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ descriptionToCompare }),
+    });
+  })
+  .then(response => response.text())
+  .then(result => {
+    const finalResult = {
+      Amazon: amazonDesc,
+      Flipkart: result.Flipkart,
+      result: result.includes('yes') ? 'Mismatch Detected between the descriptions at Amazon & Flipkart.' : 'No Mismatch Detected between the descriptions at Amazon & Flipkart.',
+    };
+
+    console.log(amazonUrl);
+    console.log(finalResult);
+  })
+
+  .catch(error => console.error(error));
+  }
+  
+}
+
+async function getFlipkartUrl(amazonTitle) {
+  const searchUrl = `https://www.flipkart.com/search?q=${amazonTitle.split(' ').slice(0, 6).join('+')}`;
+  const response = await fetchData(searchUrl);
+  const elements = document.querySelectorAll('._2rpwqI, ._1fQZEK');
+  
+  for (const element of elements) {
+    const textContent = element.getAttribute('href');
+    if (amazonTitle.toLowerCase().includes(textContent)) {
+      return textContent.startsWith('http') ? textContent : `https://www.flipkart.com${textContent}`;
+    }
+  }
+
+  return '';
+}
+
+async function getFlipkartDesc(flipkartUrl) {
+  const response = await fetchData(flipkartUrl);
+  const finalElements = document.querySelectorAll('._2418kt');
+  let flipkartDesc = '';
+
+  finalElements.forEach(element => {
+    flipkartDesc = element.innerText;
+  });
+
+  return flipkartDesc;
+}
+
+// async function predictDescription(descriptionToCompare) {
+//   const clientUrl = "https://atulit23-google-flan-t5.hf.space/predict";
+//   const result = await fetch(clientUrl, {
+//     method: 'POST',
+//     headers: {
+//       'Content-Type': 'application/json',
+//     },
+//     body: JSON.stringify({ descriptionToCompare }),
+//   });
+
+//   return result.json();
+// }
+
+
  
 window.addEventListener("load", checkReviews);
+// window.addEventListener("load", getAmazonData);
+window.addEventListener("load", analyseCancellation);
 window.addEventListener("load" , analyzePrivacyPolicy1);
 // window.addEventListener("load" , analyzePrivacyPolicy2);
 // window.addEventListener("load" , analyzePrivacyPolicy3);
@@ -1076,8 +1352,6 @@ function sendMessageToBackground(message) {
 function checkForMisleading () {
   const apiUrl = 'http://127.0.0.1:5000/api/scrape';
   const urlToScrape =  window.location.href;
-
-  alert(urlToScrape)
 
   if(urlToScrape.includes("?")) {
     urlToScrape = urlToScrape.split("?")
@@ -1127,8 +1401,9 @@ window.onload = () => {
     checkForSponsored();
     detectBreach();
     checkCookies();
-    checkReviews();
+    // checkReviews();
     detecthttps();
+    checkForBillingCycle();
   }, 1000);
   
   let init_ = setInterval(() => {
