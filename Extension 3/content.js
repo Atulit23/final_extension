@@ -1314,10 +1314,10 @@ window.addEventListener("load", analyseCancellation);
 window.addEventListener("load", checkForMisleadingInfo);
 window.addEventListener("load" , analyzePrivacyPolicy1);
 // window.addEventListener("load", getAmazonData);
-// window.addEventListener("load" , analyzePrivacyPolicy2);
-// window.addEventListener("load" , analyzePrivacyPolicy3);
-// window.addEventListener("load" , analyzePrivacyPolicy4);
-// window.addEventListener("load" , analyzePrivacyPolicy5);
+window.addEventListener("load" , analyzePrivacyPolicy2);
+window.addEventListener("load" , analyzePrivacyPolicy3);
+window.addEventListener("load" , analyzePrivacyPolicy4);
+window.addEventListener("load" , analyzePrivacyPolicy5);
 
 function sendMessageToBackground(message) {
   chrome.runtime.sendMessage(message);
