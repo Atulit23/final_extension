@@ -1,6 +1,3 @@
-import { client } from "@gradio/client";
-const app = await client("https://atulit23-google-flan-t5.hf.space/");
-
 let allResults = localStorage.getItem(window.location.href + "further")
   ? JSON.parse(localStorage.getItem(window.location.href + "further"))
   : { current_url: window.location.href };
@@ -611,9 +608,9 @@ function analyzePrivacyPolicy5() {
       if (concerningPhrases.length > 0) {
         allResults["bestsmartphoneunder10000"] =
           "Privacy policy contains deceptive keywords which may lead to data leak.";
-        alert(
-          "Privacy policy contains deceptive keywords which may lead to data leaks"
-        );
+        // alert(
+        //   "Privacy policy contains deceptive keywords which may lead to data leaks"
+        // );
         console.log(
           "Privacy policy of this website contains deceptive keywords which may lead to data leaks",
           concerningPhrases
@@ -897,11 +894,11 @@ function checkTotal() {
       ) {
         allResults[base + "_total_check"] =
           "Some extra charge has been charged!!";
-        alert("Some extra charge has been charged!!");
+        // alert("Some extra charge has been charged!!");
       } else {
         allResults[base + "_total_check"] =
-          "Amounts are equal! No one sneaked into ye basket!";
-        alert("Amounts are equal! No one sneaked into ye basket!");
+          "Amounts are equal!";
+        // alert("Amounts are equal! No one sneaked into ye basket!");
       }
     }
   } else if (window.location.href.includes("ajio")) {
@@ -1016,11 +1013,11 @@ function checkTotal() {
       ) {
         allResults[base + "_total_check"] =
           "Some extra charge has been charged!!";
-        alert("Some extra charge has been charged!!");
+        // alert("Some extra charge has been charged!!");
       } else {
         allResults[base + "_total_check"] =
-          "Amounts are equal! No one sneaked into ye basket!";
-        alert("Amounts are equal! No one sneaked into ye basket!");
+          "Amounts are equal!";
+        // alert("Amounts are equal! No one sneaked into ye basket!");
       }
     }
   }
@@ -1098,10 +1095,10 @@ function checkForBillingCycle() {
         console.log(currentText)
         allResults['subscription_details'] = 'Billing Cycle is defined clearly!'
         arr.push(concatenatedArray[i])
-        if(concatenatedArray[i].children.length == 0) {
+        // if(concatenatedArray[i].children.length == 0) {
           // concatenatedArray[i].parentElement.style.border = '3px solid red'
-          // concatenatedArray[i].style.border = '3px solid red'
-        }
+          concatenatedArray[i].style.border = '3px solid red'
+        // }
       } 
     }
 
@@ -1125,7 +1122,7 @@ async function analyseCancellation () {
   }
 
   if(window.location.href.includes("pricing") || window.location.href.includes("membership") || window.location.href.includes("planform") || window.location.href.includes("paywall")) {
-    alert(terms_url)
+    // alert(terms_url)
     if(terms_url === "") {
       allResults["terms"] = "The terms of cancellation are not clear."
       allResults["how_to_cancel"] = "They don't explain you how to cancel your subscription!"
@@ -1181,7 +1178,7 @@ async function fetchData(url) {
 
 async function getAmazonData() {
   if(amazonUrl.includes("amazon") && (amazonUrl.includes("/dp/") || window.location.href.includes("/gp/"))) {
-    alert(amazonUrl)
+    // alert(amazonUrl)
     // const response = await fetchData(amazonUrl);
     // const amazonTitle = document.getElementById('productTitle').innerText.trim();
     // const amazonDesc = document.getElementById('feature-bullets').innerText.trim();
@@ -1208,9 +1205,11 @@ async function getAmazonData() {
     // console.log(amazonUrl);
     // console.log(descriptionToCompare);
     // console.log(finalResult);
-    let amazonTitle = ""
-    let amazonDesc = ""
-    fetch(amazonUrl)
+    let amazonTitle = "";
+  let amazonDesc = "";
+
+  // Fetching data from Amazon
+  fetch(amazonUrl)
   .then(response => response.text())
   .then(html => {
     const parser = new DOMParser();
@@ -1220,106 +1219,68 @@ async function getAmazonData() {
     amazonTitle = doc.getElementById('productTitle').innerText.trim();
     amazonDesc = doc.getElementById('feature-bullets').innerText.trim();
 
-    console.log(amazonTitle)
-    console.log(amazonDesc)
+    console.log(amazonTitle);
+    console.log(amazonDesc);
 
     // Constructing the Flipkart search URL
-    const flipkartSearchUrl = `https://www.flipkart.com/search?q=${amazonTitle.split(' ').slice(0, 6).join('+')}`;
+    const flipkartSearchUrl = `http://localhost:3000/fetchData?url=${`https://www.flipkart.com/search?q=${amazonTitle.split(' ').slice(0, 6).join('+')}`}`;
+
+    console.log(`https://www.flipkart.com/search?q=${amazonTitle.split(' ').slice(0, 6).join('+')}`)
+    console.log(flipkartSearchUrl)
 
     // Fetching data from the Flipkart search page
-    return fetch(flipkartSearchUrl);
-  })
-  .then(response => response.text())
-  .then(html => {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, 'text/html');
+    fetch(flipkartSearchUrl)
+    .then(response => response.text())
+    .then(html => {
+      const parser = new DOMParser();
+      console.log(html)
+      const doc = parser.parseFromString(html, 'text/html');
 
-    // Extracting Flipkart URL
-    let flipkartUrl = '';
-    const elements = doc.querySelectorAll('._2rpwqI, ._1fQZEK');
-    for (const element of elements) {
-      const textContent = element.getAttribute('href');
-      if (amazonTitle.toLowerCase().includes(textContent)) {
-        flipkartUrl = textContent.startsWith('http') ? textContent : `https://www.flipkart.com${textContent}`;
-        break;
+      // Extracting Flipkart URL
+
+      let flipkartUrl = '';
+      const elements = doc.querySelectorAll('._2rpwqI, ._1fQZEK');
+      for (const element of elements) {
+        const textContent = element.getAttribute('href');
+        if (amazonTitle.toLowerCase().includes(textContent)) {
+          flipkartUrl = textContent.startsWith('http') ? textContent : `https://www.flipkart.com${textContent}`;
+          break;
+        }
       }
-    }
 
-    if (!flipkartUrl) {
-      throw new Error('Flipkart URL not found');
-    }
+      // if (!flipkartUrl) {
+      //   throw new Error('Flipkart URL not found');
+      // }
 
-    return fetch(flipkartUrl);
+      // Fetching data from the Flipkart page
+
+      fetch(flipkartUrl)
+      .then(response => response.text())
+      .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+
+        // Extracting Flipkart description
+
+        let flipkartDesc = '';
+        const finalElements = doc.querySelectorAll('._2418kt');
+        finalElements.forEach(element => {
+          flipkartDesc = element.innerText;
+        });
+
+        // Constructing the description to compare
+
+        const descriptionToCompare = `First description: ${amazonDesc} Second Description: ${flipkartDesc} As you can see I have provided you with two descriptions. Compare these two descriptions to see if for the same field some different information has been provided. Answer in yes or no.`;
+
+        console.log(descriptionToCompare);
+      })
+    })
   })
-  .then(response => response.text())
-  .then(html => {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, 'text/html');
-
-    // Extracting Flipkart description
-    let flipkartDesc = '';
-    const finalElements = doc.querySelectorAll('._2418kt');
-    finalElements.forEach(element => {
-      flipkartDesc = element.innerText;
-    });
-
-    // Constructing the description to compare
-    const descriptionToCompare = `First description: ${amazonDesc} Second Description: ${flipkartDesc} As you can see I have provided you with two descriptions. Compare these two descriptions to see if for the same field some different information has been provided. Answer in yes or no.`;
-
-    console.log(descriptionToCompare)
-    
-    // Predicting the result
-    return fetch("https://atulit23-google-flan-t5.hf.space/predict", {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ descriptionToCompare }),
-    });
-  })
-  .then(response => response.text())
-  .then(result => {
-    const finalResult = {
-      Amazon: amazonDesc,
-      Flipkart: result.Flipkart,
-      result: result.includes('yes') ? 'Mismatch Detected between the descriptions at Amazon & Flipkart.' : 'No Mismatch Detected between the descriptions at Amazon & Flipkart.',
-    };
-
-    console.log(amazonUrl);
-    console.log(finalResult);
-  })
-
-  .catch(error => console.error(error));
-  }
   
 }
-
-async function getFlipkartUrl(amazonTitle) {
-  const searchUrl = `https://www.flipkart.com/search?q=${amazonTitle.split(' ').slice(0, 6).join('+')}`;
-  const response = await fetchData(searchUrl);
-  const elements = document.querySelectorAll('._2rpwqI, ._1fQZEK');
-  
-  for (const element of elements) {
-    const textContent = element.getAttribute('href');
-    if (amazonTitle.toLowerCase().includes(textContent)) {
-      return textContent.startsWith('http') ? textContent : `https://www.flipkart.com${textContent}`;
-    }
-  }
-
-  return '';
 }
 
-async function getFlipkartDesc(flipkartUrl) {
-  const response = await fetchData(flipkartUrl);
-  const finalElements = document.querySelectorAll('._2418kt');
-  let flipkartDesc = '';
 
-  finalElements.forEach(element => {
-    flipkartDesc = element.innerText;
-  });
-
-  return flipkartDesc;
-}
 
 // async function predictDescription(descriptionToCompare) {
 //   const clientUrl = "https://atulit23-google-flan-t5.hf.space/predict";
@@ -1334,12 +1295,25 @@ async function getFlipkartDesc(flipkartUrl) {
 //   return result.json();
 // }
 
+async function checkForMisleadingInfo () {
+  // alert(window.location.href)
+  if(window.location.href.includes("amazon") && window.location.href.includes("/dp/")) {
+    fetch(`http://127.0.0.1:5000/compare_descriptions?amazon_url=${window.location.href}`)
+    .then(response => {
+      return response.json()
+    })
+    .then((text) => {
+      console.log(text)
+      allResults["mislead"] = text.result
+    })
+  }
+}
 
- 
 window.addEventListener("load", checkReviews);
-// window.addEventListener("load", getAmazonData);
 window.addEventListener("load", analyseCancellation);
+window.addEventListener("load", checkForMisleadingInfo);
 window.addEventListener("load" , analyzePrivacyPolicy1);
+// window.addEventListener("load", getAmazonData);
 // window.addEventListener("load" , analyzePrivacyPolicy2);
 // window.addEventListener("load" , analyzePrivacyPolicy3);
 // window.addEventListener("load" , analyzePrivacyPolicy4);
