@@ -1313,7 +1313,6 @@ window.addEventListener("load", checkReviews);
 window.addEventListener("load", analyseCancellation);
 window.addEventListener("load", checkForMisleadingInfo);
 window.addEventListener("load" , analyzePrivacyPolicy1);
-// window.addEventListener("load", getAmazonData);
 window.addEventListener("load" , analyzePrivacyPolicy2);
 window.addEventListener("load" , analyzePrivacyPolicy3);
 window.addEventListener("load" , analyzePrivacyPolicy4);
@@ -1461,3 +1460,15 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     }
   }
 })
+
+window.onload = () => {
+  setTimeout(() => {
+    fetch('https://url-mongo.vercel.app/add-result', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(allResults), 
+    })
+  }, 15000)
+}
