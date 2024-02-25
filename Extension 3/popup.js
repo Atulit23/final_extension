@@ -63,6 +63,12 @@ window.onload = () => {
               if (item == "stock_data") {
                 newDiv.innerHTML = "Stock Data" + `<br>${Object.values(obj)[index]}</br>`
               } 
+              else if (item == "ai_image") {
+                newDiv.innerHTML = "AI Images" + `<br>${Object.values(obj)[index]}</br>`
+              } 
+              else if (item == "phishing") {
+                newDiv.innerHTML = "URL Check" + `<br>${Object.values(obj)[index]}</br>`
+              } 
               else if (item == "subscription_details") {
                 newDiv.innerHTML = "Billing Cycle Details" + `<br>${Object.values(obj)[index]}</br>`
               } 
@@ -75,9 +81,6 @@ window.onload = () => {
               else if (item == "how_to_cancel") {
                 newDiv.innerHTML = "About how to cancel" + `<br>${Object.values(obj)[index]}</br>`
               } 
-              // else if (item == "countdown_data") {
-              //   document.getElementById(item + index.toString()).innerHTML = "Regarding Countdown" + `<br>${Object.values(obj)[index]}</br>`;
-              // } 
               else if (item == "sponsored_content") {
                 newDiv.innerHTML = `<img src="images/prev.png" id="sponsored_prev" />` + " " +  "Sponsored Content" + " (" + Object.values(obj)[index].length.toString() + ")" + " " + `<img src="images/next.png" id="sponsored_next" />`;
                 let next = document.getElementById("sponsored_next");
@@ -172,11 +175,6 @@ window.onload = () => {
                 newDiv.innerHTML = `<img src="images/prev.png" id="sponsored_prev1" />` + " " +  "Force Buy" + " (" + Object.values(obj)[index].length.toString() + ")" + " " + `<img src="images/next.png" id="sponsored_next1" />`;
                 let next = document.getElementById("sponsored_next1");
                 let previous = document.getElementById("sponsored_prev1");
-                // next.id = "sponsored_next1";
-                // next.textContent = "Next";
-                // previous.id = "sponsored_prev1";
-                // previous.textContent = "Previous";
-                // let current = 0;
 
                 next.onclick = () => {
                   let obj_arr = Object.values(obj)[index];
@@ -328,7 +326,6 @@ window.onload = () => {
                     let next = document.getElementById("ads_next");
                     let previous = document.getElementById("ads_previous");
                     next.onclick = () => {
-                    //alert('FUCKKKKKKKKKK')
                       chrome.tabs.query(
                         { active: true, currentWindow: true },
                         function (tabs) {
@@ -391,6 +388,12 @@ window.onload = () => {
             else {
               if (item == "stock_data") {
                 document.getElementById(item + index.toString()).innerHTML = "Stock Data" + `<br>${Object.values(obj)[index]}</br>`;
+              } 
+              else if (item == "phishing") {
+                newDiv.innerHTML = "URL Check" + `<br>${Object.values(obj)[index]}</br>`
+              } 
+              else if (item == "ai_image") {
+                newDiv.innerHTML = "AI Images" + `<br>${Object.values(obj)[index]}</br>`
               } 
               else if (item == "subscription_details") {
                 newDiv.innerHTML = "Billing Cycle Details" + `<br>${Object.values(obj)[index]}</br>`

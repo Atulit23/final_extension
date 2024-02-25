@@ -1309,14 +1309,70 @@ async function checkForMisleadingInfo () {
   }
 }
 
+async function checkForPhishing () {
+  await fetch(`https://additional-features-y6jv.onrender.com/phishing?url=${window.location.href}`)
+  .then(resposne => resposne.json())
+  .then(result => {
+    if(result.result === "Safe") {
+      allResults["phishing"] = "URL of this website is legitimate. Website is safe."
+    } else {
+      allResults["phishing"] = "The URL of this website seems to be phishing. Website is not safe. Exercise caution."
+    }
+  })
+  .catch(err => {
+    console.log(err)
+  })
+}
+
+async function checkAIGenImages () {
+  const images = Array.from(document.getElementsByTagName("img")).slice(0, 12)
+  let includesFake = []
+
+  for (let i = 0; i < images.length; i++) {
+    await fetch(`https://additional-features-y6jv.onrender.com/ai-image?url=${images[i].src}`)
+    .then(resposne => resposne.json())
+    .then(result => {
+      console.log(result)
+      if(result.Fake > result.Real) {
+        includesFake.push(true)
+      } else {
+        includesFake.push(false)
+      }
+    })
+    .catch(err => {
+      console.log(err)
+    })
+  }
+  if(includesFake.includes(true)) {
+    allResults["ai_image"] = "AI Generated images were detected!"
+  } else {
+    allResults["ai_image"] = "AI Generated images were not detected!"
+  }
+}
+
+async function storeData () {
+  setTimeout(async () => {
+    await fetch('https://url-mongo.vercel.app/add-result', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(allResults), 
+    })
+  }, 15000)
+}
+
 window.addEventListener("load", checkReviews);
 window.addEventListener("load", analyseCancellation);
-window.addEventListener("load", checkForMisleadingInfo);
+// window.addEventListener("load", checkForMisleadingInfo);
 window.addEventListener("load" , analyzePrivacyPolicy1);
 window.addEventListener("load" , analyzePrivacyPolicy2);
 window.addEventListener("load" , analyzePrivacyPolicy3);
 window.addEventListener("load" , analyzePrivacyPolicy4);
 window.addEventListener("load" , analyzePrivacyPolicy5);
+window.addEventListener("load" , checkForPhishing);
+window.addEventListener("load" , storeData);
+window.addEventListener("load" , checkAIGenImages);
 
 function sendMessageToBackground(message) {
   chrome.runtime.sendMessage(message);
@@ -1461,14 +1517,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   }
 })
 
-window.onload = () => {
-  setTimeout(() => {
-    fetch('https://url-mongo.vercel.app/add-result', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(allResults), 
-    })
-  }, 15000)
-}
+// window.onload = () => {
+
+// }
