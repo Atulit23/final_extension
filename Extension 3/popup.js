@@ -63,6 +63,9 @@ window.onload = () => {
               if (item == "stock_data") {
                 newDiv.innerHTML = "Stock Data" + `<br>${Object.values(obj)[index]}</br>`
               } 
+              else if (item == "giznext_policy") {
+                newDiv.innerHTML = "Transparency Check" + `<br>${Object.values(obj)[index]}</br>`
+              } 
               else if (item == "ai_image") {
                 newDiv.innerHTML = "AI Images" + `<br>${Object.values(obj)[index]}</br>`
               } 
@@ -1061,6 +1064,9 @@ window.onload = () => {
                 newDiv.innerHTML = "Misleading Information Check: " + `<br>${Object.values(obj)[index]}</br>`
               }  
               else if (item == "amazon_policy") {
+                newDiv.innerHTML = "Transparency Check" + `<br>${Object.values(obj)[index]}</br>`
+              } 
+              else if (item == "giznext_policy") {
                 newDiv.innerHTML = "Transparency Check" + `<br>${Object.values(obj)[index]}</br>`
               } 
               else {

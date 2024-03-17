@@ -1,0 +1,51 @@
+{
+  "name": "SafEcom",
+  "description": "",
+  "version": 1,
+  "tasks": [
+    {
+      "name": "Data Collection",
+      "taskReferenceName": "Data Collection_ref",
+      "type": "EVENT",
+      "sink": "sqs:internal_event_name",
+      "inputParameters": {}
+    },
+    {
+      "name": "Data Modelling",
+      "taskReferenceName": "Data Modelling_ref",
+      "type": "EVENT",
+      "sink": "sqs:internal_event_name",
+      "inputParameters": {}
+    },
+    {
+      "name": "ML Frameworks ",
+      "taskReferenceName": "ML Frameworks _ref",
+      "type": "EVENT",
+      "sink": "sqs:internal_event_name",
+      "inputParameters": {}
+    },
+    {
+      "name": "Chromium Extension",
+      "taskReferenceName": "Chromium Extension_ref",
+      "type": "EVENT",
+      "sink": "sqs:internal_event_name",
+      "inputParameters": {}
+    },
+    {
+      "name": "ESL Certification",
+      "taskReferenceName": "ESL Certification_ref",
+      "type": "EVENT",
+      "sink": "sqs:internal_event_name",
+      "inputParameters": {}
+    }
+  ],
+  "inputParameters": [],
+  "outputParameters": {},
+  "schemaVersion": 2,
+  "restartable": true,
+  "workflowStatusListenerEnabled": false,
+  "ownerEmail": "atulit23@gmail.com",
+  "timeoutPolicy": "ALERT_ONLY",
+  "timeoutSeconds": 0,
+  "failureWorkflow": ""
+}

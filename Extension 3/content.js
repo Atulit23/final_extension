@@ -333,7 +333,7 @@ function detectsnap() {
   if (tInput) {
     allResults["forced_account"] =
       "Only Create Account if you trust this website!";
-    showCustomPopup("Alert! Forced Account Creation Detected on Snapdeal");
+    showCustomPopup("Alert! Forced Account Creation Detected. Proceed with caution.");
   }
 }
 
@@ -583,6 +583,7 @@ function analyzePrivacyPolicy4() {
 }
 
 function analyzePrivacyPolicy5() {
+  // alert('Hi')
   const privacyPolicyUrl =
     "https://www.bestsmartphoneunder10000.in/privacy-policy/";
 
@@ -784,7 +785,7 @@ function checkTotal() {
           "Some extra charge has been charged!!";
         // alert("Some extra charge has been charged!!");
       } else {
-        allResults[base + "_total_check"] = "Everything looks good";
+        allResults[base + "_total_check"] = "No extra charge has been charged!";
         // alert("Everything looks good");
       }
     }
@@ -1297,6 +1298,7 @@ async function getAmazonData() {
 
 async function checkForMisleadingInfo () {
   // alert(window.location.href)
+  // allResults["mislead"] = 'No misleading information was found!'
   if(window.location.href.includes("amazon") && window.location.href.includes("/dp/")) {
     fetch(`http://127.0.0.1:5000/compare_descriptions?amazon_url=${window.location.href}`)
     .then(response => {
@@ -1327,7 +1329,7 @@ async function checkForPhishing () {
 async function checkAIGenImages () {
   const images = Array.from(document.getElementsByTagName("img")).slice(0, 12)
   let includesFake = []
-
+  
   for (let i = 0; i < images.length; i++) {
     await fetch(`https://additional-features-y6jv.onrender.com/ai-image?url=${images[i].src}`)
     .then(resposne => resposne.json())
@@ -1343,6 +1345,7 @@ async function checkAIGenImages () {
       console.log(err)
     })
   }
+
   if(includesFake.includes(true)) {
     allResults["ai_image"] = "AI Generated images were detected!"
   } else {
@@ -1364,7 +1367,7 @@ async function storeData () {
 
 window.addEventListener("load", checkReviews);
 window.addEventListener("load", analyseCancellation);
-// window.addEventListener("load", checkForMisleadingInfo);
+window.addEventListener("load", checkForMisleadingInfo);
 window.addEventListener("load" , analyzePrivacyPolicy1);
 window.addEventListener("load" , analyzePrivacyPolicy2);
 window.addEventListener("load" , analyzePrivacyPolicy3);
@@ -1433,6 +1436,7 @@ window.onload = () => {
     // checkReviews();
     detecthttps();
     checkForBillingCycle();
+    // analyzePrivacyPolicy5()
   }, 1000);
   
   let init_ = setInterval(() => {
